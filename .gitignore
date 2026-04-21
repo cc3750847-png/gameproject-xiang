@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+.npm-cache/
+*.tsbuildinfo
+
+.runtime/
+.superpowers/
+.vercel
+xiang-river-obsidian-vault/.obsidian/
