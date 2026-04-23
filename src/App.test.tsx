@@ -15,6 +15,32 @@ function setMediaDevices(getUserMedia?: () => Promise<{ getTracks: () => Array<{
   });
 }
 
+function setGeolocation(latitude = 28.22821, longitude = 112.93882) {
+  const getCurrentPosition = vi.fn((success: PositionCallback) => {
+    success({
+      coords: {
+        latitude,
+        longitude,
+        accuracy: 12,
+        altitude: null,
+        altitudeAccuracy: null,
+        heading: null,
+        speed: null,
+      },
+      timestamp: 1000,
+    } as GeolocationPosition);
+  });
+
+  Object.defineProperty(globalThis.navigator, 'geolocation', {
+    configurable: true,
+    value: {
+      getCurrentPosition,
+    },
+  });
+
+  return getCurrentPosition;
+}
+
 function getScannerStage() {
   const scanner = screen.getByLabelText('AR 引导层');
   const stage = scanner.querySelector('.scanner-stage');
@@ -328,6 +354,67 @@ describe('App core flow', () => {
     });
 
     expect(await screen.findByText(JOURNEY_SCREENS.approaching.title)).toBeInTheDocument();
+  });
+
+  it('requests browser location and marks reachable map nodes', async () => {
+    const getCurrentPosition = setGeolocation();
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: '定位并刷新地图' }));
+
+    expect(getCurrentPosition).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText('真实定位已连接')).toBeInTheDocument();
+    expect(screen.getByTestId('map-node-shore-gate')).toHaveTextContent('可进入');
+  });
+
+  it('lets the user skip an optional node task after entering a marker', async () => {
+    setGeolocation();
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: '定位并刷新地图' }));
+    await screen.findByText('真实定位已连接');
+    fireEvent.click(screen.getByRole('button', { name: '进入洲头渡口节点' }));
+    fireEvent.click(screen.getByRole('button', { name: '跳过此节点任务' }));
+
+    expect(screen.getByText('已跳过洲头渡口任务，主线可继续推进。')).toBeInTheDocument();
+  });
+
+  it('awards a postcard after three scene photos and shows it in the final settlement', async () => {
+    setGeolocation();
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: '定位并刷新地图' }));
+    await screen.findByText('真实定位已连接');
+    fireEvent.click(screen.getByRole('button', { name: '进入洲头渡口节点' }));
+    fireEvent.click(screen.getByRole('button', { name: '拍摄老码头' }));
+    fireEvent.click(screen.getByRole('button', { name: '拍摄水纹' }));
+    fireEvent.click(screen.getByRole('button', { name: '拍摄树影' }));
+
+    expect(screen.getByText('已获得洲头渡口明信片')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: JOURNEY_SCREENS.entry.primaryLabel }));
+    fireEvent.click(screen.getByRole('button', { name: JOURNEY_SCREENS.guiding.primaryLabel }));
+    expect(await screen.findByText(JOURNEY_SCREENS.approaching.title)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: JOURNEY_SCREENS.approaching.primaryLabel }));
+    expect(await screen.findByText(JOURNEY_SCREENS.resonance.title)).toBeInTheDocument();
+
+    vi.useFakeTimers();
+    fireEvent.pointerDown(screen.getByRole('button', { name: '按住共鸣' }));
+
+    await act(async () => {
+      vi.advanceTimersByTime(1600);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    vi.useRealTimers();
+    fireEvent.click(await screen.findByRole('button', { name: JOURNEY_SCREENS.completion.primaryLabel }));
+    fireEvent.click(await screen.findByRole('button', { name: JOURNEY_SCREENS.handoff.primaryLabel }));
+
+    const settlement = await screen.findByLabelText('最终结算图');
+    expect(settlement).toHaveTextContent('最终结算明信片');
+    expect(settlement).toHaveTextContent('洲头渡口明信片');
+    expect(settlement).toHaveTextContent('你把渡口的三处景物留在了回声里。');
   });
 });
 

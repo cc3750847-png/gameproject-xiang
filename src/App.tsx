@@ -6,6 +6,14 @@ import { deriveParticleField } from './features/guidance/deriveParticleField';
 import { JOURNEY_ORDER, JOURNEY_SCREENS } from './features/journey/screens';
 import { getNextScreen, type JourneyScreen } from './features/journey/getNextScreen';
 import { getHoldState } from './features/journey/getHoldState';
+import {
+  createInitialNodeTaskState,
+  createPostcardReward,
+  getMapNodesWithDistance,
+  recordPhotoCapture,
+  skipNodeTask,
+} from './features/map-nodes/mapNodes';
+import type { GeoPoint, MapNode, NodeTaskState, PostcardReward } from './features/map-nodes/types';
 
 const HOLD_TARGET_MS = 1500;
 const DEMO_TARGET_BEARING = 18;
@@ -13,6 +21,75 @@ const DEFAULT_DEMO_DEVIATION = -28;
 const LOST_SIGNAL_AGE_MS = 2400;
 const MAX_AUDIO_GAIN = 0.08;
 const PLAYER_ID = 'player-demo';
+const DEMO_PLAYER_LOCATION: GeoPoint = {
+  latitude: 28.2282,
+  longitude: 112.9388,
+};
+const MAP_NODES: MapNode[] = [
+  {
+    id: 'shore-gate',
+    title: '洲头渡口',
+    summary: '在渡口确认江风、旧码头与水面入口线索。',
+    coordinate: {
+      latitude: 28.22821,
+      longitude: 112.93882,
+    },
+    marker: {
+      x: 24,
+      y: 66,
+    },
+    radiusMeters: 35,
+    photoTargets: ['老码头', '水纹', '树影'],
+    postcard: {
+      id: 'shore-postcard',
+      title: '洲头渡口明信片',
+      caption: '你把渡口的三处景物留在了回声里。',
+      imageTone: 'warm-river',
+    },
+  },
+  {
+    id: 'bell-platform',
+    title: '远钟台',
+    summary: '沿江岸向北，寻找仍在水面回荡的钟声。',
+    coordinate: {
+      latitude: 28.231,
+      longitude: 112.941,
+    },
+    marker: {
+      x: 72,
+      y: 22,
+    },
+    radiusMeters: 30,
+    photoTargets: ['石阶', '铃影', '树冠'],
+    postcard: {
+      id: 'bell-postcard',
+      title: '远钟台明信片',
+      caption: '钟声替你保管了这一段路线。',
+      imageTone: 'mist-blue',
+    },
+  },
+  {
+    id: 'leaf-cove',
+    title: '树湾回声',
+    summary: '在树影尽头标记一处安静的回声湾。',
+    coordinate: {
+      latitude: 28.2269,
+      longitude: 112.9369,
+    },
+    marker: {
+      x: 48,
+      y: 42,
+    },
+    radiusMeters: 28,
+    photoTargets: ['叶面', '石凳', '江光'],
+    postcard: {
+      id: 'leaf-postcard',
+      title: '树湾回声明信片',
+      caption: '这一湾树影把你的脚步收进了风里。',
+      imageTone: 'leaf-gold',
+    },
+  },
+];
 const STAGE_GAME_IDS: Partial<Record<JourneyScreen, string>> = {
   guiding: 'river-sound',
   approaching: 'island-light',
@@ -242,6 +319,12 @@ function App() {
   const [stageGameStatus, setStageGameStatus] = useState<'idle' | 'loading' | 'ready' | 'syncing' | 'error'>('idle');
   const [stageGameFeedback, setStageGameFeedback] = useState('');
   const [stageGameReward, setStageGameReward] = useState('');
+  const [playerLocation, setPlayerLocation] = useState<GeoPoint>(DEMO_PLAYER_LOCATION);
+  const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'ready' | 'demo' | 'error'>('idle');
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [nodeTask, setNodeTask] = useState<NodeTaskState | null>(null);
+  const [postcardReward, setPostcardReward] = useState<PostcardReward | null>(null);
+  const [shareFeedback, setShareFeedback] = useState('');
   const holdTimer = useRef<number | null>(null);
   const stageGameSyncingRef = useRef(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -253,6 +336,14 @@ function App() {
   const config = JOURNEY_SCREENS[screen];
   const holdState = getHoldState(holdMs, HOLD_TARGET_MS);
   const activeStageGameId = getStageGameId(screen);
+  const mapNodes = useMemo(
+    () => getMapNodesWithDistance(MAP_NODES, playerLocation),
+    [playerLocation]
+  );
+  const selectedNode = useMemo(
+    () => mapNodes.find((node) => node.id === selectedNodeId) ?? null,
+    [mapNodes, selectedNodeId]
+  );
 
   const guidanceState = useMemo(() => {
     const now = Date.now();
@@ -629,6 +720,80 @@ function App() {
     }, 100);
   };
 
+  const refreshMapLocation = () => {
+    setLocationStatus('loading');
+
+    if (!navigator.geolocation?.getCurrentPosition) {
+      setPlayerLocation(DEMO_PLAYER_LOCATION);
+      setLocationStatus('demo');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setPlayerLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        setLocationStatus('ready');
+      },
+      () => {
+        setPlayerLocation(DEMO_PLAYER_LOCATION);
+        setLocationStatus('error');
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+      }
+    );
+  };
+
+  const enterMapNode = (node: MapNode) => {
+    setSelectedNodeId(node.id);
+    setNodeTask(createInitialNodeTaskState(node));
+    setShareFeedback('');
+  };
+
+  const handleSkipNodeTask = () => {
+    if (!nodeTask) {
+      return;
+    }
+
+    setNodeTask(skipNodeTask(nodeTask));
+  };
+
+  const handleCapturePhoto = (target: string) => {
+    if (!nodeTask || !selectedNode) {
+      return;
+    }
+
+    const nextTask = recordPhotoCapture(nodeTask, target);
+    setNodeTask(nextTask);
+
+    const nextReward = createPostcardReward(selectedNode, nextTask);
+    if (nextReward) {
+      setPostcardReward(nextReward);
+    }
+  };
+
+  const handleSharePostcard = () => {
+    if (!postcardReward) {
+      return;
+    }
+
+    if (navigator.share) {
+      void navigator
+        .share({
+          title: postcardReward.title,
+          text: postcardReward.shareText,
+        })
+        .catch(() => undefined);
+      return;
+    }
+
+    setShareFeedback('分享文案已准备，可复制到社交平台。');
+  };
+
   const handlePrimaryAction = async () => {
     const nextScreen = getNextScreen(screen, 'primary');
     stopHold();
@@ -698,6 +863,145 @@ function App() {
           </div>
         </div>
 
+        <section className="map-node-panel" aria-label="区域地图节点系统">
+          <div className="stage-game-header">
+            <div>
+              <p className="meta-label">区域地图</p>
+              <h2>橘洲节点标记</h2>
+            </div>
+            <span className="stage-game-status">
+              {locationStatus === 'ready'
+                ? '真实定位已连接'
+                : locationStatus === 'loading'
+                  ? '定位中'
+                  : locationStatus === 'error'
+                    ? '定位失败，使用演示点'
+                    : locationStatus === 'demo'
+                      ? '演示定位'
+                      : '等待定位'}
+            </span>
+          </div>
+
+          <p className="stage-game-objective">
+            到达指定区域后可进入节点任务；任务非强制，可以跳过继续主线。
+          </p>
+
+          <div className="map-location-actions">
+            <button type="button" className="secondary" onClick={refreshMapLocation}>
+              定位并刷新地图
+            </button>
+            <span>
+              {playerLocation.latitude.toFixed(5)}, {playerLocation.longitude.toFixed(5)}
+            </span>
+          </div>
+
+          <div className="map-route" aria-label="节点地图">
+            {mapNodes.map((node) => (
+              <button
+                key={node.id}
+                type="button"
+                className="map-marker"
+                style={
+                  {
+                    '--marker-x': `${node.marker.x}%`,
+                    '--marker-y': `${node.marker.y}%`,
+                  } as CSSProperties
+                }
+                data-reachable={node.isReachable}
+                data-testid={`map-node-${node.id}`}
+                onClick={() => {
+                  if (node.isReachable) {
+                    enterMapNode(node);
+                  }
+                }}
+              >
+                <span>{node.title}</span>
+                <small>{node.isReachable ? '可进入' : `${node.distanceMeters}m`}</small>
+              </button>
+            ))}
+          </div>
+
+          <div className="map-node-list">
+            {mapNodes.map((node) => (
+              <article key={node.id} className="map-node-card" data-reachable={node.isReachable}>
+                <div>
+                  <strong>{node.title}</strong>
+                  <p>{node.summary}</p>
+                </div>
+                <button
+                  type="button"
+                  className="secondary"
+                  disabled={!node.isReachable}
+                  onClick={() => enterMapNode(node)}
+                >
+                  进入{node.title}节点
+                </button>
+              </article>
+            ))}
+          </div>
+
+          {selectedNode && nodeTask ? (
+            <section className="node-task-panel" aria-label="节点任务面板">
+              <div className="stage-game-header">
+                <div>
+                  <p className="meta-label">节点任务</p>
+                  <h2>{selectedNode.title}</h2>
+                </div>
+                <span className="stage-game-status">
+                  {nodeTask.status === 'completed'
+                    ? '已完成'
+                    : nodeTask.status === 'skipped'
+                      ? '已跳过'
+                      : `${nodeTask.capturedTargets.length} / ${nodeTask.requiredTargets.length}`}
+                </span>
+              </div>
+
+              {nodeTask.status === 'skipped' ? (
+                <p className="stage-game-feedback">已跳过{selectedNode.title}任务，主线可继续推进。</p>
+              ) : (
+                <>
+                  <p className="stage-game-objective">
+                    对该区域内的三处景物进行拍照，完成后获得一张可分享明信片。
+                  </p>
+                  <div className="photo-target-grid">
+                    {nodeTask.requiredTargets.map((target) => {
+                      const captured = nodeTask.capturedTargets.includes(target);
+
+                      return (
+                        <button
+                          key={target}
+                          type="button"
+                          className="secondary"
+                          disabled={captured || nodeTask.status === 'completed'}
+                          data-captured={captured}
+                          onClick={() => handleCapturePhoto(target)}
+                        >
+                          {captured ? `已拍摄${target}` : `拍摄${target}`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button
+                    type="button"
+                    className="secondary"
+                    disabled={nodeTask.status === 'completed'}
+                    onClick={handleSkipNodeTask}
+                  >
+                    跳过此节点任务
+                  </button>
+                </>
+              )}
+
+              {postcardReward && postcardReward.nodeId === selectedNode.id ? (
+                <div className="postcard-preview" data-tone={postcardReward.imageTone}>
+                  <p className="meta-label">已获得{postcardReward.title}</p>
+                  <strong>{postcardReward.caption}</strong>
+                </div>
+              ) : null}
+            </section>
+          ) : null}
+        </section>
+
         {activeStageGameId ? (
           <section className="stage-game-panel" aria-label="阶段联调面板">
             <div className="stage-game-header">
@@ -762,6 +1066,27 @@ function App() {
         ) : null}
 
         <p className="journey-note">{config.note}</p>
+
+        {screen === 'finale' ? (
+          <section className="settlement-panel" aria-label="最终结算图">
+            <p className="meta-label">最终结算明信片</p>
+            {postcardReward ? (
+              <>
+                <div className="postcard-preview settlement-postcard" data-tone={postcardReward.imageTone}>
+                  <span>{postcardReward.capturedCount} / 3 景物已收集</span>
+                  <h2>{postcardReward.title}</h2>
+                  <p>{postcardReward.caption}</p>
+                </div>
+                <button type="button" className="secondary share-button" onClick={handleSharePostcard}>
+                  分享明信片
+                </button>
+                {shareFeedback ? <p className="stage-game-feedback">{shareFeedback}</p> : null}
+              </>
+            ) : (
+              <p className="stage-game-objective">本次旅程尚未获得明信片，也可以继续主线完成结算。</p>
+            )}
+          </section>
+        ) : null}
 
         <div className="actions journey-actions">
           {screen !== 'resonance' ? (
