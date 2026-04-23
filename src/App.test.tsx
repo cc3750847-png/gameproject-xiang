@@ -3,8 +3,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
 import { JOURNEY_SCREENS } from './features/journey/screens';
 
+function openHomeMenuStart() {
+  fireEvent.click(screen.getByRole('button', { name: '开始游戏' }));
+}
+
 function openGuidanceLayer() {
-  fireEvent.click(screen.getByRole('button', { name: JOURNEY_SCREENS.entry.primaryLabel }));
+  openHomeMenuStart();
+  fireEvent.click(screen.getByRole('button', { name: '继续主线' }));
   fireEvent.click(screen.getByRole('button', { name: JOURNEY_SCREENS.guiding.secondaryLabel ?? '' }));
 }
 
@@ -41,6 +46,22 @@ function setGeolocation(latitude = 28.22821, longitude = 112.93882) {
   return getCurrentPosition;
 }
 
+function mockFileReader(result = 'data:image/png;base64,avatar') {
+  class MockFileReader {
+    result: string | ArrayBuffer | null = result;
+    onload: ((this: FileReader, ev: ProgressEvent<FileReader>) => void) | null = null;
+
+    readAsDataURL() {
+      this.onload?.call(this as unknown as FileReader, {} as ProgressEvent<FileReader>);
+    }
+  }
+
+  Object.defineProperty(globalThis, 'FileReader', {
+    configurable: true,
+    value: MockFileReader,
+  });
+}
+
 function getScannerStage() {
   const scanner = screen.getByLabelText('AR 引导层');
   const stage = scanner.querySelector('.scanner-stage');
@@ -55,9 +76,24 @@ function getScannerStage() {
 afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
+  window.localStorage.clear();
 });
 
 describe('App core flow', () => {
+  it('shows the home menu with a reserved title area before the main flow starts', () => {
+    render(<App />);
+
+    expect(screen.getByLabelText('首页标题预留区')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '开始游戏' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '成就图鉴' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '设置选项' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '退出游戏' })).toBeInTheDocument();
+    expect(document.querySelector('.home-menu__medallions')).toBeNull();
+    expect(document.querySelector('.home-menu__utility-icons')).toBeNull();
+    expect(document.querySelector('.home-menu__panel--compact')).not.toBeNull();
+    expect(screen.queryByLabelText('底部导航')).not.toBeInTheDocument();
+  });
+
   it('opens the camera guidance layer from the guiding screen', async () => {
     const getUserMedia = vi.fn().mockResolvedValue({
       getTracks: () => [{ stop: vi.fn() }],
@@ -74,6 +110,35 @@ describe('App core flow', () => {
     expect(scannerStage).toHaveAttribute('data-phase', 'seeking');
     expect(scannerStage).toHaveAttribute('data-direction', 'left');
     expect(scannerStage.querySelector('.micro-close')).not.toBeNull();
+  });
+
+  it('shows the new scenic background on non-home pages', () => {
+    render(<App />);
+
+    openHomeMenuStart();
+
+    const shell = document.querySelector('.app-shell--journey');
+    const background = document.querySelector('.journey-background');
+    const panel = document.querySelector('.journey-panel--fixed');
+
+    expect(shell).not.toBeNull();
+    expect(background).not.toBeNull();
+    expect(panel).not.toBeNull();
+  });
+
+  it('renders the bottom navigation with icons and labels on journey pages', () => {
+    render(<App />);
+
+    openHomeMenuStart();
+
+    const nav = screen.getByLabelText('底部导航');
+    const navButtons = nav.querySelectorAll('button');
+    const navIcons = nav.querySelectorAll('.bottom-nav__icon');
+    const navLabels = nav.querySelectorAll('.bottom-nav__label');
+
+    expect(navButtons).toHaveLength(3);
+    expect(navIcons).toHaveLength(3);
+    expect(navLabels).toHaveLength(3);
   });
 
   it('keeps the scanner demo visible when media APIs are unavailable', async () => {
@@ -94,7 +159,10 @@ describe('App core flow', () => {
   it('walks through the main journey screens', async () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole('button', { name: JOURNEY_SCREENS.entry.primaryLabel }));
+    openHomeMenuStart();
+    expect(screen.getByRole('heading', { name: '橘洲节点地图' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '继续主线' }));
     expect(screen.getByText(JOURNEY_SCREENS.guiding.title)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: JOURNEY_SCREENS.guiding.primaryLabel }));
@@ -107,7 +175,8 @@ describe('App core flow', () => {
   it('completes resonance after a sustained hold', async () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole('button', { name: JOURNEY_SCREENS.entry.primaryLabel }));
+    openHomeMenuStart();
+    fireEvent.click(screen.getByRole('button', { name: '继续主线' }));
     fireEvent.click(screen.getByRole('button', { name: JOURNEY_SCREENS.guiding.primaryLabel }));
     expect(await screen.findByText(JOURNEY_SCREENS.approaching.title)).toBeInTheDocument();
 
@@ -331,7 +400,8 @@ describe('App core flow', () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole('button', { name: JOURNEY_SCREENS.entry.primaryLabel }));
+    openHomeMenuStart();
+    fireEvent.click(screen.getByRole('button', { name: '继续主线' }));
 
     expect(await screen.findByText('River Sound')).toBeInTheDocument();
     expect(screen.getByText('Guide the signal to the next stage.')).toBeInTheDocument();
@@ -360,22 +430,31 @@ describe('App core flow', () => {
     const getCurrentPosition = setGeolocation();
     render(<App />);
 
+    openHomeMenuStart();
     fireEvent.click(screen.getByRole('button', { name: '定位并刷新地图' }));
 
     expect(getCurrentPosition).toHaveBeenCalledTimes(1);
     expect(await screen.findByText('真实定位已连接')).toBeInTheDocument();
     expect(screen.getByTestId('map-node-shore-gate')).toHaveTextContent('可进入');
+    expect(document.querySelector('.stage-strip')).toBeNull();
   });
 
-  it('lets the user skip an optional node task after entering a marker', async () => {
+  it('lets the user enter a node detail page and skip the optional task back to the map', async () => {
     setGeolocation();
     render(<App />);
 
+    openHomeMenuStart();
     fireEvent.click(screen.getByRole('button', { name: '定位并刷新地图' }));
     await screen.findByText('真实定位已连接');
     fireEvent.click(screen.getByRole('button', { name: '进入洲头渡口节点' }));
+
+    expect(screen.getByRole('heading', { level: 1, name: '洲头渡口' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '开始节点任务' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '拍摄老码头' })).not.toBeInTheDocument();
+
     fireEvent.click(screen.getByRole('button', { name: '跳过此节点任务' }));
 
+    expect(screen.getByRole('heading', { name: '橘洲节点地图' })).toBeInTheDocument();
     expect(screen.getByText('已跳过洲头渡口任务，主线可继续推进。')).toBeInTheDocument();
   });
 
@@ -383,16 +462,19 @@ describe('App core flow', () => {
     setGeolocation();
     render(<App />);
 
+    openHomeMenuStart();
     fireEvent.click(screen.getByRole('button', { name: '定位并刷新地图' }));
     await screen.findByText('真实定位已连接');
     fireEvent.click(screen.getByRole('button', { name: '进入洲头渡口节点' }));
+    fireEvent.click(screen.getByRole('button', { name: '开始节点任务' }));
     fireEvent.click(screen.getByRole('button', { name: '拍摄老码头' }));
     fireEvent.click(screen.getByRole('button', { name: '拍摄水纹' }));
     fireEvent.click(screen.getByRole('button', { name: '拍摄树影' }));
 
     expect(screen.getByText('已获得洲头渡口明信片')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '返回地图' }));
 
-    fireEvent.click(screen.getByRole('button', { name: JOURNEY_SCREENS.entry.primaryLabel }));
+    fireEvent.click(screen.getByRole('button', { name: '继续主线' }));
     fireEvent.click(screen.getByRole('button', { name: JOURNEY_SCREENS.guiding.primaryLabel }));
     expect(await screen.findByText(JOURNEY_SCREENS.approaching.title)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: JOURNEY_SCREENS.approaching.primaryLabel }));
@@ -415,6 +497,104 @@ describe('App core flow', () => {
     expect(settlement).toHaveTextContent('最终结算明信片');
     expect(settlement).toHaveTextContent('洲头渡口明信片');
     expect(settlement).toHaveTextContent('你把渡口的三处景物留在了回声里。');
+    expect(screen.queryByLabelText('区域地图节点系统')).not.toBeInTheDocument();
+  });
+
+  it('opens the terminal from the bottom navigation and lets the player edit nickname', async () => {
+    render(<App />);
+
+    openHomeMenuStart();
+    fireEvent.click(screen.getByRole('button', { name: '终端' }));
+
+    expect(screen.getByRole('heading', { name: '玩家终端' })).toBeInTheDocument();
+
+    const nicknameInput = screen.getByLabelText('玩家昵称');
+    fireEvent.change(nicknameInput, { target: { value: '橘洲收藏家' } });
+
+    expect(screen.getByDisplayValue('橘洲收藏家')).toBeInTheDocument();
+  });
+
+  it('supports local avatar uploads inside the terminal', async () => {
+    mockFileReader();
+    render(<App />);
+
+    openHomeMenuStart();
+    fireEvent.click(screen.getByRole('button', { name: '终端' }));
+
+    const fileInput = screen.getByLabelText('上传本地头像');
+    fireEvent.change(fileInput, {
+      target: {
+        files: [new File(['avatar'], 'avatar.png', { type: 'image/png' })],
+      },
+    });
+
+    expect(await screen.findByAltText('玩家头像')).toHaveAttribute('src', 'data:image/png;base64,avatar');
+  });
+
+  it('resumes the current mainline stage after checking the map mid-journey', async () => {
+    render(<App />);
+
+    openHomeMenuStart();
+    fireEvent.click(screen.getByRole('button', { name: '继续主线' }));
+    fireEvent.click(screen.getByRole('button', { name: JOURNEY_SCREENS.guiding.primaryLabel }));
+    expect(await screen.findByText(JOURNEY_SCREENS.approaching.title)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '地图' }));
+    expect(screen.getByRole('heading', { name: '橘洲节点地图' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '继续主线' }));
+    expect(screen.getByText(JOURNEY_SCREENS.approaching.title)).toBeInTheDocument();
+  });
+
+  it('rejects oversized avatar uploads before persisting them', async () => {
+    mockFileReader();
+    render(<App />);
+
+    openHomeMenuStart();
+    fireEvent.click(screen.getByRole('button', { name: '终端' }));
+
+    const fileInput = screen.getByLabelText('上传本地头像');
+    const oversizedFile = new File([new Uint8Array(3 * 1024 * 1024)], 'huge-avatar.png', {
+      type: 'image/png',
+    });
+
+    fireEvent.change(fileInput, {
+      target: {
+        files: [oversizedFile],
+      },
+    });
+
+    expect(await screen.findByText('头像图片过大，请选择 2MB 以内的图片。')).toBeInTheDocument();
+    expect(screen.queryByAltText('玩家头像')).not.toBeInTheDocument();
+  });
+
+  it('shows hybrid game and cultural achievements after postcard completion', async () => {
+    setGeolocation();
+    render(<App />);
+
+    openHomeMenuStart();
+    fireEvent.click(screen.getByRole('button', { name: '定位并刷新地图' }));
+    await screen.findByText('真实定位已连接');
+    fireEvent.click(screen.getByRole('button', { name: '进入洲头渡口节点' }));
+    fireEvent.click(screen.getByRole('button', { name: '开始节点任务' }));
+    fireEvent.click(screen.getByRole('button', { name: '拍摄老码头' }));
+    fireEvent.click(screen.getByRole('button', { name: '拍摄水纹' }));
+    fireEvent.click(screen.getByRole('button', { name: '拍摄树影' }));
+    fireEvent.click(screen.getByRole('button', { name: '终端' }));
+
+    expect(screen.getByText('第一张明信片')).toBeInTheDocument();
+    expect(screen.getByText('江景采集者')).toBeInTheDocument();
+    expect(screen.getByText('洲头渡口明信片')).toBeInTheDocument();
+  });
+
+  it('hides the bottom navigation while AR guidance is open', async () => {
+    setMediaDevices();
+    render(<App />);
+
+    openGuidanceLayer();
+    await screen.findByLabelText('AR 引导层');
+
+    expect(screen.queryByLabelText('底部导航')).not.toBeInTheDocument();
   });
 });
 

@@ -3,6 +3,7 @@ import './styles/tokens.scss';
 import { deriveGuidanceAudioLevel } from './features/guidance/deriveGuidanceAudioLevel';
 import { deriveGuidanceState } from './features/guidance/deriveGuidanceState';
 import { deriveParticleField } from './features/guidance/deriveParticleField';
+import { HomeMenu } from './features/home/HomeMenu';
 import { JOURNEY_ORDER, JOURNEY_SCREENS } from './features/journey/screens';
 import { getNextScreen, type JourneyScreen } from './features/journey/getNextScreen';
 import { getHoldState } from './features/journey/getHoldState';
@@ -14,12 +15,23 @@ import {
   skipNodeTask,
 } from './features/map-nodes/mapNodes';
 import type { GeoPoint, MapNode, NodeTaskState, PostcardReward } from './features/map-nodes/types';
+import { ACHIEVEMENT_DEFINITIONS, applyAchievementEvent, getAchievementProgress } from './features/player/achievements';
+import {
+  PLAYER_STORAGE_KEY,
+  createDefaultPlayerState,
+  deserializePlayerState,
+  serializePlayerState,
+  updatePlayerAvatar,
+  updatePlayerNickname,
+} from './features/player/playerState';
+import type { PlayerState } from './features/player/types';
 
 const HOLD_TARGET_MS = 1500;
 const DEMO_TARGET_BEARING = 18;
 const DEFAULT_DEMO_DEVIATION = -28;
 const LOST_SIGNAL_AGE_MS = 2400;
 const MAX_AUDIO_GAIN = 0.08;
+const MAX_AVATAR_FILE_SIZE_BYTES = 2 * 1024 * 1024;
 const PLAYER_ID = 'player-demo';
 const DEMO_PLAYER_LOCATION: GeoPoint = {
   latitude: 28.2282,
@@ -137,6 +149,8 @@ type StageGameMutationPayload = {
     }>;
   };
 };
+
+type ExperienceView = 'entry' | 'map' | 'node-detail' | 'photo-task' | 'journey' | 'terminal';
 
 function getStageGameId(screen: JourneyScreen) {
   return STAGE_GAME_IDS[screen] ?? null;
@@ -308,6 +322,7 @@ function getScannerStatusCopy(
 
 function App() {
   const [screen, setScreen] = useState<JourneyScreen>('entry');
+  const [activeView, setActiveView] = useState<ExperienceView>('entry');
   const [holdMs, setHoldMs] = useState(0);
   const [apiStatus, setApiStatus] = useState('API 检查中');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -325,6 +340,15 @@ function App() {
   const [nodeTask, setNodeTask] = useState<NodeTaskState | null>(null);
   const [postcardReward, setPostcardReward] = useState<PostcardReward | null>(null);
   const [shareFeedback, setShareFeedback] = useState('');
+  const [terminalFeedback, setTerminalFeedback] = useState('');
+  const [player, setPlayer] = useState<PlayerState>(() => {
+    if (typeof window === 'undefined') {
+      return createDefaultPlayerState();
+    }
+
+    return deserializePlayerState(window.localStorage.getItem(PLAYER_STORAGE_KEY));
+  });
+  const [lastNonTerminalView, setLastNonTerminalView] = useState<ExperienceView>('entry');
   const holdTimer = useRef<number | null>(null);
   const stageGameSyncingRef = useRef(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -332,7 +356,6 @@ function App() {
   const audioContextRef = useRef<AudioContext | null>(null);
   const oscillatorRef = useRef<OscillatorNode | null>(null);
   const gainNodeRef = useRef<GainNode | null>(null);
-  const currentIndex = JOURNEY_ORDER.indexOf(screen);
   const config = JOURNEY_SCREENS[screen];
   const holdState = getHoldState(holdMs, HOLD_TARGET_MS);
   const activeStageGameId = getStageGameId(screen);
@@ -343,6 +366,15 @@ function App() {
   const selectedNode = useMemo(
     () => mapNodes.find((node) => node.id === selectedNodeId) ?? null,
     [mapNodes, selectedNodeId]
+  );
+  const achievementProgress = useMemo(() => getAchievementProgress(player), [player]);
+  const unlockedAchievements = useMemo(
+    () => ACHIEVEMENT_DEFINITIONS.filter((achievement) => player.achievementIds.includes(achievement.id)),
+    [player.achievementIds]
+  );
+  const collectedPostcards = useMemo(
+    () => MAP_NODES.map((node) => node.postcard).filter((postcard) => player.postcardIds.includes(postcard.id)),
+    [player.postcardIds]
   );
 
   const guidanceState = useMemo(() => {
@@ -374,14 +406,121 @@ function App() {
     () => (cameraStatus === 'ready' ? deriveGuidanceAudioLevel(guidanceState) : 0),
     [cameraStatus, guidanceState]
   );
-  const indicator = useMemo(
-    () =>
-      JOURNEY_ORDER.map((item, index) => ({
-        item,
-        active: index <= currentIndex,
-      })),
-    [currentIndex]
-  );
+  const legacyViewConfig = useMemo(() => {
+    if (activeView === 'map') {
+      return {
+        ...config,
+        eyebrow: '区域地图',
+        title: '橘洲节点地图',
+        description: '先定位当前位置，再选择可进入的文化节点；不强制做任务，也可以直接继续主线。',
+        progress: '地图选点',
+        note: '地图页只负责定位与选点，主线推进放在底部按钮里。',
+        statusTag:
+          locationStatus === 'ready'
+            ? '真实定位'
+            : locationStatus === 'loading'
+              ? '定位中'
+              : locationStatus === 'error'
+                ? '演示点'
+                : locationStatus === 'demo'
+                  ? '演示定位'
+                  : '待定位',
+      };
+    }
+
+    if (activeView === 'node-detail') {
+      return {
+        ...config,
+        eyebrow: '节点详情',
+        title: selectedNode?.title ?? '节点详情',
+        description: selectedNode?.summary ?? '查看节点任务说明，并选择是否进入任务。',
+        progress: '任务可选',
+        note: '节点任务不是强制流程，跳过后仍可继续主线。',
+        statusTag: '可跳过',
+      };
+    }
+
+    if (activeView === 'photo-task') {
+      return {
+        ...config,
+        eyebrow: '拍照任务',
+        title: '拍摄三处景物',
+        description: selectedNode
+          ? `在${selectedNode.title}收集三处景物，完成后获得一张明信片。`
+          : '收集三处景物，完成后获得一张明信片。',
+        progress: nodeTask ? `${nodeTask.capturedTargets.length} / ${nodeTask.requiredTargets.length}` : '0 / 3',
+        note: '这里用清单状态表达任务进度，不再使用全局进度条。',
+        statusTag: nodeTask?.status === 'completed' ? '已完成' : '收集中',
+      };
+    }
+
+    return config;
+  }, [activeView, config, locationStatus, nodeTask, selectedNode]);
+
+  void legacyViewConfig;
+
+  const viewConfig = useMemo(() => {
+    if (activeView === 'map') {
+      return {
+        ...config,
+        eyebrow: '区域地图',
+        title: '橘洲节点地图',
+        description: '先定位当前区域，再选择可进入的文化节点。节点任务可以参与，也可以跳过后继续主线。',
+        progress: '地图选点',
+        note: '地图页只负责定位与进点，主线推进和终端系统从底部导航切换。',
+        statusTag:
+          locationStatus === 'ready'
+            ? '真实定位'
+            : locationStatus === 'loading'
+              ? '定位中'
+              : locationStatus === 'error'
+                ? '演示点位'
+                : locationStatus === 'demo'
+                  ? '演示定位'
+                  : '待定位',
+      };
+    }
+
+    if (activeView === 'node-detail') {
+      return {
+        ...config,
+        eyebrow: '节点详情',
+        title: selectedNode?.title ?? '节点详情',
+        description: selectedNode?.summary ?? '查看节点任务说明，并选择是否进入任务。',
+        progress: '任务可选',
+        note: '节点任务不是强制流程，跳过后依然可以继续主线。',
+        statusTag: '可跳过',
+      };
+    }
+
+    if (activeView === 'photo-task') {
+      return {
+        ...config,
+        eyebrow: '拍照任务',
+        title: '拍摄三处景物',
+        description: selectedNode
+          ? `在${selectedNode.title}收集三处景物，完成后可获得一张明信片。`
+          : '收集三处景物，完成后可获得一张明信片。',
+        progress: nodeTask ? `${nodeTask.capturedTargets.length} / ${nodeTask.requiredTargets.length}` : '0 / 3',
+        note: '任务页只展示当前拍照进度，不再叠加全局进度条。',
+        statusTag: nodeTask?.status === 'completed' ? '已完成' : '收集中',
+      };
+    }
+
+    if (activeView === 'terminal') {
+      return {
+        ...config,
+        eyebrow: '游戏终端',
+        title: '玩家终端',
+        description: '在这里管理头像、昵称、成就、文旅收藏和本地系统设置。',
+        progress: `${achievementProgress.unlocked} / ${achievementProgress.total}`,
+        note: '终端是独立页面，返回后会回到你刚才停留的流程位置。',
+        statusTag: player.title,
+      };
+    }
+
+    return config;
+  }, [activeView, achievementProgress, config, locationStatus, nodeTask, player.title, selectedNode]);
 
   function stopHold() {
     if (holdTimer.current !== null) {
@@ -620,6 +759,24 @@ function App() {
   }, [activeStageGameId, screen]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(PLAYER_STORAGE_KEY, serializePlayerState(player));
+    } catch {
+      setTerminalFeedback('本地存档空间不足，请更换更小的头像图片。');
+    }
+  }, [player]);
+
+  useEffect(() => {
+    if (screen === 'finale' && activeView === 'journey') {
+      setPlayer((current) => applyAchievementEvent(current, { type: 'journey-completed' }));
+    }
+  }, [activeView, screen]);
+
+  useEffect(() => {
     if (!isScannerOpen) {
       return;
     }
@@ -726,6 +883,7 @@ function App() {
     if (!navigator.geolocation?.getCurrentPosition) {
       setPlayerLocation(DEMO_PLAYER_LOCATION);
       setLocationStatus('demo');
+      setPlayer((current) => applyAchievementEvent(current, { type: 'map-refreshed' }));
       return;
     }
 
@@ -736,10 +894,12 @@ function App() {
           longitude: position.coords.longitude,
         });
         setLocationStatus('ready');
+        setPlayer((current) => applyAchievementEvent(current, { type: 'map-refreshed' }));
       },
       () => {
         setPlayerLocation(DEMO_PLAYER_LOCATION);
         setLocationStatus('error');
+        setPlayer((current) => applyAchievementEvent(current, { type: 'map-refreshed' }));
       },
       {
         enableHighAccuracy: true,
@@ -752,14 +912,53 @@ function App() {
     setSelectedNodeId(node.id);
     setNodeTask(createInitialNodeTaskState(node));
     setShareFeedback('');
+    setPlayer((current) => applyAchievementEvent(current, { type: 'node-entered', nodeId: node.id }));
+    setActiveView('node-detail');
+  };
+
+  const startNodeTask = () => {
+    if (selectedNode && !nodeTask) {
+      setNodeTask(createInitialNodeTaskState(selectedNode));
+    }
+
+    setActiveView('photo-task');
+  };
+
+  const returnToMap = () => {
+    setActiveView('map');
+  };
+
+  const openTerminal = () => {
+    setLastNonTerminalView((current) => (activeView === 'terminal' ? current : activeView));
+    setActiveView('terminal');
+  };
+
+  const returnFromTerminal = () => {
+    setActiveView(lastNonTerminalView === 'terminal' ? (screen === 'entry' ? 'entry' : 'journey') : lastNonTerminalView);
+  };
+
+  const navigateHome = () => {
+    setScreen('entry');
+    setActiveView('entry');
+  };
+
+  const navigateMap = () => {
+    setActiveView('map');
+  };
+
+  const continueMainlineFromMap = () => {
+    setScreen((current) => (current === 'entry' ? 'guiding' : current));
+    setActiveView('journey');
   };
 
   const handleSkipNodeTask = () => {
-    if (!nodeTask) {
+    if (!nodeTask || !selectedNode) {
       return;
     }
 
     setNodeTask(skipNodeTask(nodeTask));
+    setPlayer((current) => applyAchievementEvent(current, { type: 'node-skipped', nodeId: selectedNode.id }));
+    setActiveView('map');
   };
 
   const handleCapturePhoto = (target: string) => {
@@ -773,7 +972,45 @@ function App() {
     const nextReward = createPostcardReward(selectedNode, nextTask);
     if (nextReward) {
       setPostcardReward(nextReward);
+      setPlayer((current) => {
+        const completedPlayer = applyAchievementEvent(current, {
+          type: 'photo-task-completed',
+          nodeId: selectedNode.id,
+        });
+
+        return applyAchievementEvent(completedPlayer, {
+          type: 'postcard-earned',
+          nodeId: selectedNode.id,
+          postcardId: nextReward.id,
+        });
+      });
     }
+  };
+
+  const handleNicknameChange = (nickname: string) => {
+    setPlayer((current) => updatePlayerNickname(current, nickname));
+  };
+
+  const handleAvatarUpload = (file: File | null) => {
+    if (!file) {
+      return;
+    }
+
+    if (file.size > MAX_AVATAR_FILE_SIZE_BYTES) {
+      setTerminalFeedback('头像图片过大，请选择 2MB 以内的图片。');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const avatarDataUrl = typeof reader.result === 'string' ? reader.result : null;
+      setTerminalFeedback('');
+      setPlayer((current) => updatePlayerAvatar(current, avatarDataUrl));
+    };
+    reader.onerror = () => {
+      setTerminalFeedback('头像读取失败，请重新选择一张图片。');
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSharePostcard = () => {
@@ -795,6 +1032,11 @@ function App() {
   };
 
   const handlePrimaryAction = async () => {
+    if (activeView === 'entry' || screen === 'entry') {
+      setActiveView('map');
+      return;
+    }
+
     const nextScreen = getNextScreen(screen, 'primary');
     stopHold();
     setHoldMs(0);
@@ -807,6 +1049,7 @@ function App() {
     }
 
     setScreen(nextScreen);
+    setActiveView(nextScreen === 'entry' ? 'entry' : 'journey');
   };
 
   const handleSecondaryAction = () => {
@@ -827,42 +1070,57 @@ function App() {
     }
   };
 
+  if (screen === 'entry' && activeView === 'entry') {
+    return (
+      <main className="app-shell app-shell--home">
+        <HomeMenu
+          onStart={() => {
+            void handlePrimaryAction();
+          }}
+          onOpenAchievements={openTerminal}
+          onOpenSettings={openTerminal}
+          onExit={openTerminal}
+        />
+      </main>
+    );
+  }
+
   return (
-    <main className="app-shell">
-      <section className="hero-card journey-panel">
+    <main className="app-shell app-shell--journey">
+      <div className="journey-background" aria-hidden="true" />
+      <section className="hero-card journey-panel journey-panel--fixed">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">{config.eyebrow}</p>
-            <h1>{config.title}</h1>
+            <p className="eyebrow">{viewConfig.eyebrow}</p>
+            <h1>{viewConfig.title}</h1>
           </div>
-          <span className="status-pill">{config.statusTag}</span>
+          <span className="status-pill">{viewConfig.statusTag}</span>
         </div>
 
-        <p className="description">{config.description}</p>
+        <p className="description">{viewConfig.description}</p>
 
-        <div className="stage-strip" aria-hidden="true">
-          {indicator.map(({ item, active }) => (
-            <span key={item} className={active ? 'active' : ''} />
-          ))}
-        </div>
+        {activeView === 'entry' || activeView === 'journey' ? (
+          <div className="visual-orbit" aria-hidden="true" data-screen={screen}>
+            <span />
+            <span />
+            <span />
+          </div>
+        ) : null}
 
-        <div className="visual-orbit" aria-hidden="true" data-screen={screen}>
-          <span />
-          <span />
-          <span />
-        </div>
-
+        {activeView === 'entry' || activeView === 'journey' ? (
         <div className="meta-grid">
           <div>
             <p className="meta-label">当前进度</p>
-            <strong>{config.progress}</strong>
+            <strong>{viewConfig.progress}</strong>
           </div>
           <div>
             <p className="meta-label">服务状态</p>
             <strong>{apiStatus}</strong>
           </div>
         </div>
+        ) : null}
 
+        {activeView === 'map' ? (
         <section className="map-node-panel" aria-label="区域地图节点系统">
           <div className="stage-game-header">
             <div>
@@ -940,69 +1198,240 @@ function App() {
             ))}
           </div>
 
-          {selectedNode && nodeTask ? (
-            <section className="node-task-panel" aria-label="节点任务面板">
-              <div className="stage-game-header">
-                <div>
-                  <p className="meta-label">节点任务</p>
-                  <h2>{selectedNode.title}</h2>
-                </div>
-                <span className="stage-game-status">
-                  {nodeTask.status === 'completed'
-                    ? '已完成'
-                    : nodeTask.status === 'skipped'
-                      ? '已跳过'
-                      : `${nodeTask.capturedTargets.length} / ${nodeTask.requiredTargets.length}`}
-                </span>
+          {nodeTask?.status === 'skipped' && selectedNode ? (
+            <p className="stage-game-feedback">已跳过{selectedNode.title}任务，主线可继续推进。</p>
+          ) : null}
+
+          <div className="actions map-primary-actions">
+            <button type="button" onClick={continueMainlineFromMap}>
+              继续主线
+            </button>
+          </div>
+
+        </section>
+        ) : null}
+
+        {activeView === 'node-detail' && selectedNode && nodeTask ? (
+          <section className="node-task-panel" aria-label="节点详情页">
+            <div className="stage-game-header">
+              <div>
+                <p className="meta-label">节点详情</p>
+                <h2>{selectedNode.title}</h2>
               </div>
+              <span className="stage-game-status">任务可跳过</span>
+            </div>
 
-              {nodeTask.status === 'skipped' ? (
-                <p className="stage-game-feedback">已跳过{selectedNode.title}任务，主线可继续推进。</p>
-              ) : (
-                <>
-                  <p className="stage-game-objective">
-                    对该区域内的三处景物进行拍照，完成后获得一张可分享明信片。
-                  </p>
-                  <div className="photo-target-grid">
-                    {nodeTask.requiredTargets.map((target) => {
-                      const captured = nodeTask.capturedTargets.includes(target);
+            <p className="stage-game-objective">{selectedNode.summary}</p>
+            <div className="postcard-preview" data-tone={selectedNode.postcard.imageTone}>
+              <p className="meta-label">奖励预览</p>
+              <strong>{selectedNode.postcard.title}</strong>
+              <p>{selectedNode.postcard.caption}</p>
+            </div>
+            <p className="stage-game-objective">
+              任务内容：对该区域内的三处景物进行拍照。你可以开始任务，也可以跳过后继续主线。
+            </p>
+            <div className="actions node-detail-actions">
+              <button type="button" onClick={startNodeTask}>
+                开始节点任务
+              </button>
+              <button type="button" className="secondary" onClick={handleSkipNodeTask}>
+                跳过此节点任务
+              </button>
+              <button type="button" className="secondary" onClick={returnToMap}>
+                返回地图
+              </button>
+            </div>
+          </section>
+        ) : null}
 
-                      return (
-                        <button
-                          key={target}
-                          type="button"
-                          className="secondary"
-                          disabled={captured || nodeTask.status === 'completed'}
-                          data-captured={captured}
-                          onClick={() => handleCapturePhoto(target)}
-                        >
-                          {captured ? `已拍摄${target}` : `拍摄${target}`}
-                        </button>
-                      );
-                    })}
-                  </div>
+        {activeView === 'photo-task' && selectedNode && nodeTask ? (
+          <section className="node-task-panel" aria-label="拍照任务页">
+            <div className="stage-game-header">
+              <div>
+                <p className="meta-label">拍照任务</p>
+                <h2>{selectedNode.title}</h2>
+              </div>
+              <span className="stage-game-status">
+                {nodeTask.status === 'completed'
+                  ? '已完成'
+                  : `${nodeTask.capturedTargets.length} / ${nodeTask.requiredTargets.length}`}
+              </span>
+            </div>
+
+            <p className="stage-game-objective">
+              对该区域内的三处景物进行拍照，完成后获得一张可分享明信片。
+            </p>
+            <div className="photo-target-grid">
+              {nodeTask.requiredTargets.map((target) => {
+                const captured = nodeTask.capturedTargets.includes(target);
+
+                return (
                   <button
+                    key={target}
                     type="button"
                     className="secondary"
-                    disabled={nodeTask.status === 'completed'}
-                    onClick={handleSkipNodeTask}
+                    disabled={captured || nodeTask.status === 'completed'}
+                    data-captured={captured}
+                    onClick={() => handleCapturePhoto(target)}
                   >
-                    跳过此节点任务
+                    {captured ? `已拍摄${target}` : `拍摄${target}`}
                   </button>
-                </>
-              )}
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              className="secondary"
+              disabled={nodeTask.status === 'completed'}
+              onClick={handleSkipNodeTask}
+            >
+              跳过此节点任务
+            </button>
 
-              {postcardReward && postcardReward.nodeId === selectedNode.id ? (
+            {postcardReward && postcardReward.nodeId === selectedNode.id ? (
+              <>
                 <div className="postcard-preview" data-tone={postcardReward.imageTone}>
                   <p className="meta-label">已获得{postcardReward.title}</p>
                   <strong>{postcardReward.caption}</strong>
                 </div>
-              ) : null}
-            </section>
-          ) : null}
-        </section>
+                <button type="button" className="secondary" onClick={returnToMap}>
+                  返回地图
+                </button>
+              </>
+            ) : null}
+          </section>
+        ) : null}
 
-        {activeStageGameId ? (
+        {activeView === 'terminal' ? (
+          <section className="terminal-panel" aria-label="玩家终端">
+            <div className="terminal-profile-card">
+              <div className="terminal-avatar-wrap">
+                {player.avatarDataUrl ? (
+                  <img src={player.avatarDataUrl} alt="玩家头像" className="terminal-avatar" />
+                ) : (
+                  <div className="terminal-avatar terminal-avatar--placeholder" aria-hidden="true">
+                    湘
+                  </div>
+                )}
+              </div>
+              <div className="terminal-profile-copy">
+                <p className="meta-label">玩家档案</p>
+                <strong>{player.nickname}</strong>
+                <span>{player.title}</span>
+              </div>
+            </div>
+
+            <div className="terminal-grid">
+              <section className="terminal-card">
+                <p className="meta-label">基础信息</p>
+                <label className="terminal-field" htmlFor="player-nickname">
+                  <span>玩家昵称</span>
+                  <input
+                    id="player-nickname"
+                    type="text"
+                    value={player.nickname}
+                    onChange={(event) => {
+                      handleNicknameChange(event.target.value);
+                    }}
+                  />
+                </label>
+                <label className="terminal-field terminal-field--file" htmlFor="player-avatar">
+                  <span>上传本地头像</span>
+                  <input
+                    id="player-avatar"
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) => {
+                      handleAvatarUpload(event.target.files?.[0] ?? null);
+                    }}
+                  />
+                </label>
+                {terminalFeedback ? <p className="terminal-feedback">{terminalFeedback}</p> : null}
+              </section>
+
+              <section className="terminal-card">
+                <p className="meta-label">探索概况</p>
+                <div className="terminal-stat-grid">
+                  <article>
+                    <strong>{player.level}</strong>
+                    <span>探索等级</span>
+                  </article>
+                  <article>
+                    <strong>{player.completedNodeIds.length}</strong>
+                    <span>完成节点</span>
+                  </article>
+                  <article>
+                    <strong>{collectedPostcards.length}</strong>
+                    <span>明信片</span>
+                  </article>
+                  <article>
+                    <strong>{achievementProgress.unlocked}</strong>
+                    <span>已解锁成就</span>
+                  </article>
+                </div>
+              </section>
+
+              <section className="terminal-card">
+                <div className="stage-game-header">
+                  <p className="meta-label">成就</p>
+                  <span className="stage-game-status">
+                    {achievementProgress.unlocked} / {achievementProgress.total}
+                  </span>
+                </div>
+                <div className="terminal-tag-list">
+                  {unlockedAchievements.length ? (
+                    unlockedAchievements.map((achievement) => (
+                      <span key={achievement.id} className="terminal-tag" data-kind={achievement.kind}>
+                        {achievement.title}
+                      </span>
+                    ))
+                  ) : (
+                    <p className="stage-game-objective">先进入地图、节点和任务，终端会逐步点亮你的游戏化与文旅成就。</p>
+                  )}
+                </div>
+              </section>
+
+              <section className="terminal-card">
+                <p className="meta-label">明信片收藏</p>
+                <div className="terminal-collection-list">
+                  {collectedPostcards.length ? (
+                    collectedPostcards.map((postcard) => (
+                      <article key={postcard.id} className="postcard-preview" data-tone={postcard.imageTone}>
+                        <strong>{postcard.title}</strong>
+                        <p>{postcard.caption}</p>
+                      </article>
+                    ))
+                  ) : (
+                    <p className="stage-game-objective">完成节点拍照任务后，你获得的明信片会收藏在这里。</p>
+                  )}
+                </div>
+              </section>
+
+              <section className="terminal-card">
+                <p className="meta-label">系统设置</p>
+                <div className="terminal-settings-list">
+                  <p>AR 引导时自动隐藏底部导航，避免遮挡视野。</p>
+                  <p>定位模式当前状态：{locationStatus === 'ready' ? '真实定位' : '演示定位'}</p>
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() => {
+                      setTerminalFeedback('');
+                      setPlayer((current) => updatePlayerAvatar(current, null));
+                    }}
+                  >
+                    重置头像
+                  </button>
+                  <button type="button" className="secondary" onClick={returnFromTerminal}>
+                    返回当前页面
+                  </button>
+                </div>
+              </section>
+            </div>
+          </section>
+        ) : null}
+
+        {activeView === 'journey' && activeStageGameId ? (
           <section className="stage-game-panel" aria-label="阶段联调面板">
             <div className="stage-game-header">
               <p className="meta-label">节点联调</p>
@@ -1065,9 +1494,9 @@ function App() {
           </div>
         ) : null}
 
-        <p className="journey-note">{config.note}</p>
+        <p className="journey-note">{viewConfig.note}</p>
 
-        {screen === 'finale' ? (
+        {activeView === 'journey' && screen === 'finale' ? (
           <section className="settlement-panel" aria-label="最终结算图">
             <p className="meta-label">最终结算明信片</p>
             {postcardReward ? (
@@ -1088,6 +1517,7 @@ function App() {
           </section>
         ) : null}
 
+        {activeView === 'entry' || activeView === 'journey' ? (
         <div className="actions journey-actions">
           {screen !== 'resonance' ? (
             <button
@@ -1105,7 +1535,37 @@ function App() {
             </button>
           ) : null}
         </div>
+        ) : null}
       </section>
+
+{!isScannerOpen ? (
+        <nav className="bottom-nav" aria-label="底部导航">
+          <button
+            type="button"
+            className={activeView === 'entry' || activeView === 'journey' ? 'is-active' : undefined}
+            onClick={navigateHome}
+          >
+            <img className="bottom-nav__icon" src="/home/icon-spot.png" alt="" aria-hidden="true" />
+            <span className="bottom-nav__label">主页</span>
+          </button>
+          <button
+            type="button"
+            className={activeView === 'map' || activeView === 'node-detail' || activeView === 'photo-task' ? 'is-active' : undefined}
+            onClick={navigateMap}
+          >
+            <img className="bottom-nav__icon" src="/home/icon-map.png" alt="" aria-hidden="true" />
+            <span className="bottom-nav__label">地图</span>
+          </button>
+          <button
+            type="button"
+            className={activeView === 'terminal' ? 'is-active' : undefined}
+            onClick={openTerminal}
+          >
+            <img className="bottom-nav__icon" src="/home/icon-achievement.png" alt="" aria-hidden="true" />
+            <span className="bottom-nav__label">终端</span>
+          </button>
+        </nav>
+      ) : null}
 
       {isScannerOpen ? (
         <section className="scanner-sheet" aria-label="AR 引导层">
