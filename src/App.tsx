@@ -13,11 +13,16 @@ const DEFAULT_DEMO_DEVIATION = -28;
 const LOST_SIGNAL_AGE_MS = 2400;
 const MAX_AUDIO_GAIN = 0.08;
 const PLAYER_ID = 'player-demo';
+const CAMPFIRE_SCENE = 'changsha-aux';
+const CAMPFIRE_WEBAR_URL =
+  import.meta.env.VITE_CAMPFIRE_WEBAR_URL ?? 'https://game-seven-hazel.vercel.app/ar';
 const STAGE_GAME_IDS: Partial<Record<JourneyScreen, string>> = {
   guiding: 'river-sound',
   approaching: 'island-light',
   resonance: 'memory-resonance',
 };
+
+type MainPlayMode = 'particle' | 'campfire';
 
 type StageGameConfigPayload = {
   success: boolean;
@@ -63,6 +68,43 @@ type StageGameMutationPayload = {
 
 function getStageGameId(screen: JourneyScreen) {
   return STAGE_GAME_IDS[screen] ?? null;
+}
+
+function getInitialScreen(): JourneyScreen {
+  if (typeof window === 'undefined') {
+    return 'entry';
+  }
+
+  const requestedScreen = new URLSearchParams(window.location.search).get('screen');
+  return requestedScreen && requestedScreen in JOURNEY_SCREENS
+    ? (requestedScreen as JourneyScreen)
+    : 'entry';
+}
+
+function getInitialPlayMode(): MainPlayMode {
+  if (typeof window === 'undefined') {
+    return 'particle';
+  }
+
+  return new URLSearchParams(window.location.search).get('mode') === 'campfire'
+    ? 'campfire'
+    : 'particle';
+}
+
+function getParticleReturnUrl() {
+  const url = new URL(window.location.href);
+  url.searchParams.set('screen', 'guiding');
+  url.searchParams.set('mode', 'particle');
+  return url.toString();
+}
+
+function getCampfireWebarUrl() {
+  const url = new URL(CAMPFIRE_WEBAR_URL, window.location.origin);
+  url.searchParams.set('scene', CAMPFIRE_SCENE);
+  url.searchParams.set('from', 'xiang-main');
+  url.searchParams.set('playerId', PLAYER_ID);
+  url.searchParams.set('returnUrl', getParticleReturnUrl());
+  return url.toString();
 }
 
 function getStageGameStatusCopy(status: 'idle' | 'loading' | 'ready' | 'syncing' | 'error') {
@@ -230,7 +272,8 @@ function getScannerStatusCopy(
 }
 
 function App() {
-  const [screen, setScreen] = useState<JourneyScreen>('entry');
+  const [screen, setScreen] = useState<JourneyScreen>(() => getInitialScreen());
+  const [playMode, setPlayMode] = useState<MainPlayMode>(() => getInitialPlayMode());
   const [holdMs, setHoldMs] = useState(0);
   const [apiStatus, setApiStatus] = useState('API 检查中');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -251,17 +294,19 @@ function App() {
   const gainNodeRef = useRef<GainNode | null>(null);
   const currentIndex = JOURNEY_ORDER.indexOf(screen);
   const config = JOURNEY_SCREENS[screen];
+  const secondaryActionLabel =
+    screen === 'guiding' && playMode === 'campfire' ? '进入篝火留言' : config.secondaryLabel;
   const holdState = getHoldState(holdMs, HOLD_TARGET_MS);
   const activeStageGameId = getStageGameId(screen);
 
   const guidanceState = useMemo(() => {
-    const now = Date.now();
+    const now = 0;
     const currentBearing = DEMO_TARGET_BEARING - demoDeviation;
 
     return deriveGuidanceState({
       currentBearing,
       targetBearing: DEMO_TARGET_BEARING,
-      lastUpdateAt: guidanceSignalActive ? now : now - LOST_SIGNAL_AGE_MS,
+      lastUpdateAt: guidanceSignalActive ? 0 : -LOST_SIGNAL_AGE_MS,
       now,
     });
   }, [demoDeviation, guidanceSignalActive]);
@@ -376,6 +421,29 @@ function App() {
     setDemoDeviation(DEFAULT_DEMO_DEVIATION);
     setGuidanceSignalActive(true);
     setIsDebugPanelOpen(false);
+  }
+
+  function openParticleGuidance() {
+    setPlayMode('particle');
+    setDemoDeviation(DEFAULT_DEMO_DEVIATION);
+    setGuidanceSignalActive(true);
+    setIsDebugPanelOpen(false);
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraStatus('demo');
+      setIsScannerOpen(true);
+      return;
+    }
+
+    setCameraStatus('loading');
+    ensureGuidanceAudio();
+    setIsScannerOpen(true);
+  }
+
+  function openCampfireMode() {
+    setPlayMode('campfire');
+    closeScanner();
+    window.location.assign(getCampfireWebarUrl());
   }
 
   async function loadStageGameConfig(activeScreen: JourneyScreen) {
@@ -506,21 +574,34 @@ function App() {
     let active = true;
 
     if (!activeStageGameId) {
-      setStageGameConfig(null);
-      setStageGameStatus('idle');
-      setStageGameFeedback('');
-      setStageGameReward('');
+      queueMicrotask(() => {
+        if (!active) {
+          return;
+        }
+
+        setStageGameConfig(null);
+        setStageGameStatus('idle');
+        setStageGameFeedback('');
+        setStageGameReward('');
+      });
+
       return () => {
         active = false;
       };
     }
 
-    loadStageGameConfig(screen).catch(() => {
-      if (active) {
-        setStageGameConfig(null);
-        setStageGameStatus('error');
-        setStageGameFeedback('节点接口暂不可用，当前仅保留本地演示。');
+    queueMicrotask(() => {
+      if (!active) {
+        return;
       }
+
+      loadStageGameConfig(screen).catch(() => {
+        if (active) {
+          setStageGameConfig(null);
+          setStageGameStatus('error');
+          setStageGameFeedback('节点接口暂不可用，当前仅保留本地演示。');
+        }
+      });
     });
 
     return () => {
@@ -646,19 +727,12 @@ function App() {
 
   const handleSecondaryAction = () => {
     if (screen === 'guiding') {
-      setDemoDeviation(DEFAULT_DEMO_DEVIATION);
-      setGuidanceSignalActive(true);
-      setIsDebugPanelOpen(false);
-
-      if (!navigator.mediaDevices?.getUserMedia) {
-        setCameraStatus('demo');
-        setIsScannerOpen(true);
+      if (playMode === 'campfire') {
+        openCampfireMode();
         return;
       }
 
-      setCameraStatus('loading');
-      ensureGuidanceAudio();
-      setIsScannerOpen(true);
+      openParticleGuidance();
     }
   };
 
@@ -738,6 +812,43 @@ function App() {
           </section>
         ) : null}
 
+        {screen === 'guiding' ? (
+          <section className="play-mode-panel" aria-label="主线玩法切换">
+            <div className="play-mode-header">
+              <div>
+                <p className="meta-label">主线玩法</p>
+                <h2>{playMode === 'particle' ? '粒子引导' : '篝火留言'}</h2>
+              </div>
+              <span className="stage-game-status">一键切换</span>
+            </div>
+
+            <div className="play-mode-switch" role="group" aria-label="选择主线玩法">
+              <button
+                type="button"
+                aria-pressed={playMode === 'particle'}
+                className={playMode === 'particle' ? 'active' : ''}
+                onClick={() => setPlayMode('particle')}
+              >
+                粒子引导
+              </button>
+              <button
+                type="button"
+                aria-pressed={playMode === 'campfire'}
+                className={playMode === 'campfire' ? 'active' : ''}
+                onClick={() => setPlayMode('campfire')}
+              >
+                篝火留言
+              </button>
+            </div>
+
+            <p className="play-mode-copy">
+              {playMode === 'particle'
+                ? '使用当前主游戏内置的摄像头粒子方向提示。'
+                : '切到共享 WebAR 篝火留言页，完成后可一键返回粒子主线。'}
+            </p>
+          </section>
+        ) : null}
+
         {screen === 'resonance' ? (
           <div className="hold-panel">
             <button
@@ -774,9 +885,9 @@ function App() {
               {config.primaryLabel}
             </button>
           ) : null}
-          {config.secondaryLabel ? (
+          {secondaryActionLabel ? (
             <button type="button" className="secondary" onClick={handleSecondaryAction}>
-              {config.secondaryLabel}
+              {secondaryActionLabel}
             </button>
           ) : null}
         </div>
@@ -864,6 +975,10 @@ function App() {
               }}
             >
               {isDebugPanelOpen ? '收起调试' : '调试'}
+            </button>
+
+            <button type="button" className="campfire-switch" onClick={openCampfireMode}>
+              切到篝火留言
             </button>
 
             {isDebugPanelOpen ? (
