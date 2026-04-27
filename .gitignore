@@ -7,4 +7,12 @@ coverage/
 .runtime/
 .superpowers/
 .vercel
+.codex-browser/
+.codex-logs/
+test-results/
+extracted-controls/
+tmp*.png
+tmp*.jpg
+public/runtime/
+public/**/runtime/desktop-share.json
 xiang-river-obsidian-vault/.obsidian/

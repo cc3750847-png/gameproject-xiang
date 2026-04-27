@@ -1,0 +1,23 @@
+{
+  "corners": {
+    "brush": "/home/ar-hud/corner-brush.svg"
+  },
+  "scan": {
+    "line": "/home/ar-hud/scan-line.svg"
+  },
+  "targetLock": {
+    "idle": "/home/ar-hud/target-lock-idle.svg",
+    "active": "/home/ar-hud/target-lock-active.svg",
+    "locked": "/home/ar-hud/target-lock-locked.svg",
+    "lost": "/home/ar-hud/target-lock-lost.svg"
+  },
+  "feedback": {
+    "signalLost": "/home/ar-hud/signal-lost.png"
+  },
+  "particles": {
+    "dot": "/home/ar-hud/particle-dot.png",
+    "spark": "/home/ar-hud/particle-spark.png",
+    "ribbon": "/home/ar-hud/particle-ribbon.png",
+    "wave": "/home/ar-hud/particle-wave.png"
+  }
+}

@@ -1,0 +1,5 @@
+.codex-browser
+.codex-logs
+node_modules
+dist
+coverage

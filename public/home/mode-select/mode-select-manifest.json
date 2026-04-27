@@ -1,0 +1,53 @@
+{
+  "name": "mode-select",
+  "source": "/home/mode-select/mode-select-source.png",
+  "reference": "/home/mode-select/mode-select-full-reference.png",
+  "exactSplit": "/home/mode-select/exact-split/mode-select-exact-manifest.json",
+  "preview": "/home/mode-select/mode-select-split-preview.jpg",
+  "assets": {
+    "panelWithContent": {
+      "path": "/home/mode-select/panel-with-content.png",
+      "usage": "complete central card overlay for quick restoration"
+    },
+    "title": {
+      "path": "/home/mode-select/title-select-journey.png",
+      "usage": "title block: choose journey mode"
+    },
+    "singleActiveButton": {
+      "path": "/home/mode-select/button-single-active.png",
+      "usage": "active red single-player mode button"
+    },
+    "teamIdleButton": {
+      "path": "/home/mode-select/button-team-idle.png",
+      "usage": "idle team mode button"
+    },
+    "hint": {
+      "path": "/home/mode-select/hint-enter-main.png",
+      "usage": "small helper text strip"
+    },
+    "divider": {
+      "path": "/home/mode-select/divider-long.png",
+      "usage": "thin long divider above back action"
+    },
+    "backText": {
+      "path": "/home/mode-select/button-back-text.png",
+      "usage": "back action text with ornaments"
+    },
+    "mapleTopLeft": {
+      "path": "/home/mode-select/decor-maple-top-left.png",
+      "usage": "top-left maple branch decoration"
+    },
+    "mapleRight": {
+      "path": "/home/mode-select/decor-right-maple.png",
+      "usage": "right-side maple and panel edge decoration"
+    },
+    "bottomMountains": {
+      "path": "/home/mode-select/decor-bottom-mountains.png",
+      "usage": "bottom mountain wash decoration"
+    },
+    "bottomRightLeaves": {
+      "path": "/home/mode-select/decor-bottom-right-leaves.png",
+      "usage": "bottom-right mountain and maple decoration"
+    }
+  }
+}

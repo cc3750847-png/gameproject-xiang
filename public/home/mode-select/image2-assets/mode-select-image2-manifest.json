@@ -1,0 +1,46 @@
+{
+  "name": "mode-select-image2-assets",
+  "note": "Generated individually with image2.0; transparent PNGs use chroma-key cutout. Text should be rendered by frontend with Source Han Serif.",
+  "assets": {
+    "background-clean": {
+      "path": "/home/mode-select/image2-assets/background-clean.png",
+      "source": "/home/mode-select/image2-assets/source/background-clean-source.png",
+      "transparent": false
+    },
+    "decor-maple-branch": {
+      "path": "/home/mode-select/image2-assets/decor-maple-branch.png",
+      "source": "/home/mode-select/image2-assets/source/decor-maple-branch-source.png",
+      "transparent": true
+    },
+    "divider-ornament": {
+      "path": "/home/mode-select/image2-assets/divider-ornament.png",
+      "source": "/home/mode-select/image2-assets/source/divider-ornament-source.png",
+      "transparent": true
+    },
+    "icon-team": {
+      "path": "/home/mode-select/image2-assets/icon-team.png",
+      "source": "/home/mode-select/image2-assets/source/icon-team-source.png",
+      "transparent": true
+    },
+    "icon-single": {
+      "path": "/home/mode-select/image2-assets/icon-single.png",
+      "source": "/home/mode-select/image2-assets/source/icon-single-source.png",
+      "transparent": true
+    },
+    "button-secondary-empty": {
+      "path": "/home/mode-select/image2-assets/button-secondary-empty.png",
+      "source": "/home/mode-select/image2-assets/source/button-secondary-empty-source.png",
+      "transparent": true
+    },
+    "button-primary-empty": {
+      "path": "/home/mode-select/image2-assets/button-primary-empty.png",
+      "source": "/home/mode-select/image2-assets/source/button-primary-empty-source.png",
+      "transparent": true
+    },
+    "panel-empty": {
+      "path": "/home/mode-select/image2-assets/panel-empty.png",
+      "source": "/home/mode-select/image2-assets/source/panel-empty-source.png",
+      "transparent": true
+    }
+  }
+}
