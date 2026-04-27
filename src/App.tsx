@@ -3,7 +3,8 @@ import './styles/tokens.scss';
 import { deriveGuidanceAudioLevel } from './features/guidance/deriveGuidanceAudioLevel';
 import { deriveGuidanceState } from './features/guidance/deriveGuidanceState';
 import { deriveParticleField } from './features/guidance/deriveParticleField';
-import { HomeMenu } from './features/home/HomeMenu';
+import { HomeMenu, JourneyModeSelect } from './features/home/HomeMenu';
+import { ToushiZhenjiangFrame } from './features/toushi-zhenjiang/ToushiZhenjiangFrame';
 import { JOURNEY_ORDER, JOURNEY_SCREENS } from './features/journey/screens';
 import { getNextScreen, type JourneyScreen } from './features/journey/getNextScreen';
 import { getHoldState } from './features/journey/getHoldState';
@@ -33,6 +34,23 @@ const LOST_SIGNAL_AGE_MS = 2400;
 const MAX_AUDIO_GAIN = 0.08;
 const MAX_AVATAR_FILE_SIZE_BYTES = 2 * 1024 * 1024;
 const PLAYER_ID = 'player-demo';
+const AR_HUD_ASSETS = {
+  corner: '/home/ar-hud/corner-brush.svg',
+  scanLine: '/home/ar-hud/scan-line.svg',
+  targetLock: {
+    seeking: '/home/ar-hud/target-lock-idle.svg',
+    aligning: '/home/ar-hud/target-lock-active.svg',
+    locked: '/home/ar-hud/target-lock-locked.svg',
+    lost: '/home/ar-hud/target-lock-lost.svg',
+  },
+  signalLost: '/home/ar-hud/signal-lost.png',
+  particles: [
+    '/home/ar-hud/particle-dot.png',
+    '/home/ar-hud/particle-spark.png',
+    '/home/ar-hud/particle-ribbon.png',
+    '/home/ar-hud/particle-wave.png',
+  ],
+} as const;
 const DEMO_PLAYER_LOCATION: GeoPoint = {
   latitude: 28.2282,
   longitude: 112.9388,
@@ -150,7 +168,17 @@ type StageGameMutationPayload = {
   };
 };
 
-type ExperienceView = 'entry' | 'map' | 'node-detail' | 'photo-task' | 'journey' | 'terminal';
+type ExperienceView =
+  | 'entry'
+  | 'mode-select'
+  | 'map'
+  | 'map-nodes'
+  | 'map-side-quest'
+  | 'node-detail'
+  | 'photo-task'
+  | 'journey'
+  | 'character'
+  | 'terminal';
 
 function getStageGameId(screen: JourneyScreen) {
   return STAGE_GAME_IDS[screen] ?? null;
@@ -323,6 +351,7 @@ function getScannerStatusCopy(
 function App() {
   const [screen, setScreen] = useState<JourneyScreen>('entry');
   const [activeView, setActiveView] = useState<ExperienceView>('entry');
+  const [isToushiZhenjiangOpen, setIsToushiZhenjiangOpen] = useState(false);
   const [holdMs, setHoldMs] = useState(0);
   const [apiStatus, setApiStatus] = useState('API 检查中');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -406,6 +435,7 @@ function App() {
     () => (cameraStatus === 'ready' ? deriveGuidanceAudioLevel(guidanceState) : 0),
     [cameraStatus, guidanceState]
   );
+  const targetLockAsset = AR_HUD_ASSETS.targetLock[guidanceState.phase];
   const legacyViewConfig = useMemo(() => {
     if (activeView === 'map') {
       return {
@@ -465,9 +495,9 @@ function App() {
         ...config,
         eyebrow: '区域地图',
         title: '橘洲节点地图',
-        description: '先定位当前区域，再选择可进入的文化节点。节点任务可以参与，也可以跳过后继续主线。',
-        progress: '地图选点',
-        note: '地图页只负责定位与进点，主线推进和终端系统从底部导航切换。',
+        description: '先从地图总览选择下一步：节点探索、支线玩法或继续主线，避免把所有信息挤在一屏。',
+        progress: '地图总览',
+        note: '地图总览只作为分流入口，细节内容会放到下一层页面。',
         statusTag:
           locationStatus === 'ready'
             ? '真实定位'
@@ -478,6 +508,39 @@ function App() {
                 : locationStatus === 'demo'
                   ? '演示定位'
                   : '待定位',
+      };
+    }
+
+    if (activeView === 'map-nodes') {
+      return {
+        ...config,
+        eyebrow: '节点列表',
+        title: '橘洲节点地图',
+        description: '在这一层处理定位、节点距离和进入条件；支线玩法与主线推进已从这里拆出。',
+        progress: '节点探索',
+        note: '节点列表只保留定位、地图标记和可进入节点，降低单页信息密度。',
+        statusTag:
+          locationStatus === 'ready'
+            ? '真实定位'
+            : locationStatus === 'loading'
+              ? '定位中'
+              : locationStatus === 'error'
+                ? '演示点位'
+                : locationStatus === 'demo'
+                  ? '演示定位'
+                  : '待定位',
+      };
+    }
+
+    if (activeView === 'map-side-quest') {
+      return {
+        ...config,
+        eyebrow: '支线玩法',
+        title: '投石镇江',
+        description: '把节点小游戏从地图信息层拆出，作为独立支线入口进入。',
+        progress: '支线入口',
+        note: '支线玩法独立展示，避免和地图定位、节点列表互相抢注意力。',
+        statusTag: '可进入',
       };
     }
 
@@ -515,6 +578,18 @@ function App() {
         description: '在这里管理头像、昵称、成就、文旅收藏和本地系统设置。',
         progress: `${achievementProgress.unlocked} / ${achievementProgress.total}`,
         note: '终端是独立页面，返回后会回到你刚才停留的流程位置。',
+        statusTag: player.title,
+      };
+    }
+
+    if (activeView === 'character') {
+      return {
+        ...config,
+        eyebrow: '角色档案',
+        title: '角色板块',
+        description: '查看当前角色身份、探索进度和文旅收集状态。',
+        progress: `Lv.${player.level}`,
+        note: '角色板块用于呈现玩家身份和成长状态，系统设置与收藏管理仍保留在终端里。',
         statusTag: player.title,
       };
     }
@@ -606,6 +681,22 @@ function App() {
     setDemoDeviation(DEFAULT_DEMO_DEVIATION);
     setGuidanceSignalActive(true);
     setIsDebugPanelOpen(false);
+  }
+
+  function openGuidanceScanner() {
+    setDemoDeviation(DEFAULT_DEMO_DEVIATION);
+    setGuidanceSignalActive(true);
+    setIsDebugPanelOpen(false);
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraStatus('demo');
+      setIsScannerOpen(true);
+      return;
+    }
+
+    setCameraStatus('loading');
+    ensureGuidanceAudio();
+    setIsScannerOpen(true);
   }
 
   async function loadStageGameConfig(activeScreen: JourneyScreen) {
@@ -777,6 +868,25 @@ function App() {
   }, [activeView, screen]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('arhud') !== '1') {
+      return;
+    }
+
+    setScreen('guiding');
+    setActiveView('journey');
+    setDemoDeviation(DEFAULT_DEMO_DEVIATION);
+    setGuidanceSignalActive(true);
+    setCameraStatus('demo');
+    setIsDebugPanelOpen(true);
+    setIsScannerOpen(true);
+  }, []);
+
+  useEffect(() => {
     if (!isScannerOpen) {
       return;
     }
@@ -924,13 +1034,32 @@ function App() {
     setActiveView('photo-task');
   };
 
+  const continueFromNodeTaskToAr = () => {
+    setScreen('guiding');
+    setActiveView('journey');
+    openGuidanceScanner();
+  };
+
   const returnToMap = () => {
     setActiveView('map');
+  };
+
+  const openMapNodes = () => {
+    setActiveView('map-nodes');
+  };
+
+  const openMapSideQuest = () => {
+    setActiveView('map-side-quest');
   };
 
   const openTerminal = () => {
     setLastNonTerminalView((current) => (activeView === 'terminal' ? current : activeView));
     setActiveView('terminal');
+  };
+
+  const openCharacter = () => {
+    setLastNonTerminalView((current) => (activeView === 'terminal' ? current : activeView));
+    setActiveView('character');
   };
 
   const returnFromTerminal = () => {
@@ -958,7 +1087,7 @@ function App() {
 
     setNodeTask(skipNodeTask(nodeTask));
     setPlayer((current) => applyAchievementEvent(current, { type: 'node-skipped', nodeId: selectedNode.id }));
-    setActiveView('map');
+    setActiveView('map-nodes');
   };
 
   const handleCapturePhoto = (target: string) => {
@@ -1054,32 +1183,49 @@ function App() {
 
   const handleSecondaryAction = () => {
     if (screen === 'guiding') {
-      setDemoDeviation(DEFAULT_DEMO_DEVIATION);
-      setGuidanceSignalActive(true);
-      setIsDebugPanelOpen(false);
-
-      if (!navigator.mediaDevices?.getUserMedia) {
-        setCameraStatus('demo');
-        setIsScannerOpen(true);
-        return;
-      }
-
-      setCameraStatus('loading');
-      ensureGuidanceAudio();
-      setIsScannerOpen(true);
+      openGuidanceScanner();
     }
   };
+
+  if (isToushiZhenjiangOpen) {
+    return (
+      <ToushiZhenjiangFrame
+        closeLabel="返回地图"
+        onClose={() => {
+          setIsToushiZhenjiangOpen(false);
+          setActiveView('map');
+        }}
+      />
+    );
+  }
 
   if (screen === 'entry' && activeView === 'entry') {
     return (
       <main className="app-shell app-shell--home">
         <HomeMenu
           onStart={() => {
-            void handlePrimaryAction();
+            setActiveView('mode-select');
           }}
           onOpenAchievements={openTerminal}
           onOpenSettings={openTerminal}
-          onExit={openTerminal}
+        />
+      </main>
+    );
+  }
+
+  if (screen === 'entry' && activeView === 'mode-select') {
+    return (
+      <main className="app-shell app-shell--home">
+        <JourneyModeSelect
+          onSelectSingle={() => {
+            void handlePrimaryAction();
+          }}
+          onSelectTeam={() => {
+            void handlePrimaryAction();
+          }}
+          onBack={() => {
+            setActiveView('entry');
+          }}
         />
       </main>
     );
@@ -1121,6 +1267,53 @@ function App() {
         ) : null}
 
         {activeView === 'map' ? (
+        <section className="map-node-panel map-overview-panel" aria-label="地图总览">
+          <div className="stage-game-header">
+            <div>
+              <p className="meta-label">地图总览</p>
+              <h2>选择下一层</h2>
+            </div>
+            <span className="stage-game-status">
+              {locationStatus === 'ready' ? '真实定位已连接' : '等待定位'}
+            </span>
+          </div>
+
+          <p className="stage-game-objective">
+            这里先只回答“下一步去哪”。节点、支线和主线分开进入，避免把定位、任务、小游戏全部压在同一屏。
+          </p>
+
+          <div className="map-overview-grid">
+            <article className="map-overview-card">
+              <p className="meta-label">节点探索</p>
+              <strong>定位与文化节点</strong>
+              <p>查看节点地图、刷新当前位置，再进入可到达的任务点。</p>
+              <button type="button" className="secondary" onClick={openMapNodes}>
+                查看节点列表
+              </button>
+            </article>
+
+            <article className="map-overview-card">
+              <p className="meta-label">支线玩法</p>
+              <strong>投石镇江</strong>
+              <p>独立小游戏入口，和地图节点任务分开展示。</p>
+              <button type="button" className="secondary" onClick={openMapSideQuest}>
+                查看支线玩法
+              </button>
+            </article>
+
+            <article className="map-overview-card">
+              <p className="meta-label">主线推进</p>
+              <strong>继续当前旅程</strong>
+              <p>不处理节点任务时，可以直接回到主线体验。</p>
+              <button type="button" onClick={continueMainlineFromMap}>
+                继续主线
+              </button>
+            </article>
+          </div>
+        </section>
+        ) : null}
+
+        {activeView === 'map-nodes' ? (
         <section className="map-node-panel" aria-label="区域地图节点系统">
           <div className="stage-game-header">
             <div>
@@ -1139,6 +1332,10 @@ function App() {
                       : '等待定位'}
             </span>
           </div>
+
+          <button type="button" className="secondary map-back-button" onClick={returnToMap}>
+            返回地图总览
+          </button>
 
           <p className="stage-game-objective">
             到达指定区域后可进入节点任务；任务非强制，可以跳过继续主线。
@@ -1209,6 +1406,34 @@ function App() {
           </div>
 
         </section>
+        ) : null}
+
+        {activeView === 'map-side-quest' ? (
+          <section className="map-mini-game-panel map-side-quest-panel" aria-label="节点小游戏">
+            <div className="stage-game-header">
+              <div>
+                <p className="meta-label">节点小游戏</p>
+                <h2>投石镇江</h2>
+              </div>
+              <span className="stage-game-status">支线玩法</span>
+            </div>
+            <p>
+              以体感投石完成一次独立互动。这里作为地图节点之外的支线层级，玩家想玩时再进入，不打断定位和节点选择。
+            </p>
+            <div className="actions map-side-quest-actions">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsToushiZhenjiangOpen(true);
+                }}
+              >
+                投石镇江
+              </button>
+              <button type="button" className="secondary" onClick={returnToMap}>
+                返回地图总览
+              </button>
+            </div>
+          </section>
         ) : null}
 
         {activeView === 'node-detail' && selectedNode && nodeTask ? (
@@ -1294,9 +1519,14 @@ function App() {
                   <p className="meta-label">已获得{postcardReward.title}</p>
                   <strong>{postcardReward.caption}</strong>
                 </div>
-                <button type="button" className="secondary" onClick={returnToMap}>
-                  返回地图
-                </button>
+                <div className="actions node-complete-actions">
+                  <button type="button" onClick={continueFromNodeTaskToAr}>
+                    开启 AR 引导
+                  </button>
+                  <button type="button" className="secondary" onClick={returnToMap}>
+                    返回地图
+                  </button>
+                </div>
               </>
             ) : null}
           </section>
@@ -1425,8 +1655,60 @@ function App() {
                   <button type="button" className="secondary" onClick={returnFromTerminal}>
                     返回当前页面
                   </button>
+                  {screen === 'completion' ? (
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() => {
+                        setScreen('finale');
+                        setActiveView('journey');
+                      }}
+                    >
+                      进入结算页
+                    </button>
+                  ) : null}
                 </div>
               </section>
+            </div>
+          </section>
+        ) : null}
+
+        {activeView === 'character' ? (
+          <section className="character-panel" aria-label="角色板块">
+            <div className="character-card">
+              <div className="character-avatar-ring">
+                {player.avatarDataUrl ? (
+                  <img src={player.avatarDataUrl} alt="玩家头像" className="character-avatar" />
+                ) : (
+                  <div className="character-avatar character-avatar--placeholder" aria-hidden="true">
+                    湘
+                  </div>
+                )}
+              </div>
+              <div className="character-copy">
+                <p className="meta-label">当前角色</p>
+                <strong>{player.nickname}</strong>
+                <span>{player.title}</span>
+              </div>
+            </div>
+
+            <div className="character-stat-grid">
+              <article>
+                <strong>{player.level}</strong>
+                <span>角色等级</span>
+              </article>
+              <article>
+                <strong>{player.completedNodeIds.length}</strong>
+                <span>完成节点</span>
+              </article>
+              <article>
+                <strong>{collectedPostcards.length}</strong>
+                <span>明信片</span>
+              </article>
+              <article>
+                <strong>{achievementProgress.unlocked}</strong>
+                <span>成就</span>
+              </article>
             </div>
           </section>
         ) : null}
@@ -1496,6 +1778,23 @@ function App() {
 
         <p className="journey-note">{viewConfig.note}</p>
 
+        {activeView === 'journey' && screen === 'completion' ? (
+          <section className="ia-checkpoint-panel" aria-label="完成后的角色与终端检查">
+            <p className="meta-label">下一步</p>
+            <p className="stage-game-objective">
+              先检查身份成长和终端收藏，再进入最终结算页。
+            </p>
+            <div className="actions ia-checkpoint-actions">
+              <button type="button" onClick={openCharacter}>
+                查看角色档案
+              </button>
+              <button type="button" className="secondary" onClick={openTerminal}>
+                前往终端
+              </button>
+            </div>
+          </section>
+        ) : null}
+
         {activeView === 'journey' && screen === 'finale' ? (
           <section className="settlement-panel" aria-label="最终结算图">
             <p className="meta-label">最终结算明信片</p>
@@ -1550,11 +1849,27 @@ function App() {
           </button>
           <button
             type="button"
-            className={activeView === 'map' || activeView === 'node-detail' || activeView === 'photo-task' ? 'is-active' : undefined}
+            className={
+              activeView === 'map' ||
+              activeView === 'map-nodes' ||
+              activeView === 'map-side-quest' ||
+              activeView === 'node-detail' ||
+              activeView === 'photo-task'
+                ? 'is-active'
+                : undefined
+            }
             onClick={navigateMap}
           >
             <img className="bottom-nav__icon" src="/home/icon-map.png" alt="" aria-hidden="true" />
             <span className="bottom-nav__label">地图</span>
+          </button>
+          <button
+            type="button"
+            className={activeView === 'character' ? 'is-active' : undefined}
+            onClick={openCharacter}
+          >
+            <img className="bottom-nav__icon" src="/home/icon-character-new.png" alt="" aria-hidden="true" />
+            <span className="bottom-nav__label">角色</span>
           </button>
           <button
             type="button"
@@ -1612,31 +1927,44 @@ function App() {
                 data-phase={guidanceState.phase}
                 data-direction={guidanceState.direction}
               >
-                {particleField.map((particle) => (
-                  <span
-                    key={particle.id}
-                    className="particle"
-                    style={
-                      {
-                        '--delay': `${particle.delayMs}ms`,
-                        '--duration': `${particle.durationMs}ms`,
-                        '--origin-x': `${particle.originX}px`,
-                        '--origin-y': `${particle.originY}px`,
-                        '--target-x': `${particle.targetX}px`,
-                        '--target-y': `${particle.targetY}px`,
-                        '--scale': particle.scale,
-                        '--intensity': particle.intensity,
-                      } as CSSProperties
-                    }
-                  />
-                ))}
+                {particleField.map((particle, index) => {
+                  const particleAsset =
+                    guidanceState.phase === 'locked'
+                      ? AR_HUD_ASSETS.particles[1]
+                      : AR_HUD_ASSETS.particles[index % AR_HUD_ASSETS.particles.length];
+
+                  return (
+                    <span
+                      key={particle.id}
+                      className="particle"
+                      style={
+                        {
+                          '--delay': `${particle.delayMs}ms`,
+                          '--duration': `${particle.durationMs}ms`,
+                          '--origin-x': `${particle.originX}px`,
+                          '--origin-y': `${particle.originY}px`,
+                          '--target-x': `${particle.targetX}px`,
+                          '--target-y': `${particle.targetY}px`,
+                          '--scale': particle.scale,
+                          '--intensity': particle.intensity,
+                          '--particle-image': `url(${particleAsset})`,
+                        } as CSSProperties
+                      }
+                    />
+                  );
+                })}
               </div>
 
               <div className="scanner-frame" aria-hidden="true">
-                <span className="corner top-left" />
-                <span className="corner top-right" />
-                <span className="corner bottom-left" />
-                <span className="corner bottom-right" />
+                <img className="scanner-scan-line" src={AR_HUD_ASSETS.scanLine} alt="" />
+                <img className="target-lock" src={targetLockAsset} alt="" />
+                {guidanceState.phase === 'lost' ? (
+                  <img className="signal-lost-indicator" src={AR_HUD_ASSETS.signalLost} alt="" />
+                ) : null}
+                <span className="corner top-left" style={{ '--corner-image': `url(${AR_HUD_ASSETS.corner})` } as CSSProperties} />
+                <span className="corner top-right" style={{ '--corner-image': `url(${AR_HUD_ASSETS.corner})` } as CSSProperties} />
+                <span className="corner bottom-left" style={{ '--corner-image': `url(${AR_HUD_ASSETS.corner})` } as CSSProperties} />
+                <span className="corner bottom-right" style={{ '--corner-image': `url(${AR_HUD_ASSETS.corner})` } as CSSProperties} />
               </div>
             </div>
 

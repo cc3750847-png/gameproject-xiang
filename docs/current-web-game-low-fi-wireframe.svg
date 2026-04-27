@@ -1,0 +1,227 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200" role="img" aria-labelledby="title desc">
+  <title id="title">当前网页游戏低保真线框图</title>
+  <desc id="desc">手机网页游戏从首页到地图、节点、拍照任务、AR、主线、角色和终端的低保真页面结构。</desc>
+  <defs>
+    <style>
+      .bg { fill: #f4f1ea; }
+      .title { font: 700 44px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .note { font: 400 20px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #555; }
+      .phone { fill: #fffdfa; stroke: #222; stroke-width: 4; rx: 34; ry: 34; }
+      .screen-title { font: 700 22px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .screen-sub { font: 400 15px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #555; }
+      .label { font: 700 15px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .tiny { font: 400 13px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #555; }
+      .box { fill: #f8f8f8; stroke: #333; stroke-width: 2; rx: 8; ry: 8; }
+      .box-soft { fill: #ffffff; stroke: #777; stroke-width: 1.6; rx: 8; ry: 8; }
+      .image { fill: #e9e9e9; stroke: #333; stroke-width: 2; rx: 8; ry: 8; }
+      .button { fill: #222; stroke: #222; stroke-width: 2; rx: 12; ry: 12; }
+      .button2 { fill: #fff; stroke: #222; stroke-width: 2; rx: 12; ry: 12; }
+      .button-text { font: 700 15px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #fff; }
+      .button-text2 { font: 700 15px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .nav { fill: #f1f1f1; stroke: #333; stroke-width: 2; rx: 16; ry: 16; }
+      .line { stroke: #333; stroke-width: 2; fill: none; }
+      .dash { stroke: #555; stroke-width: 2; fill: none; stroke-dasharray: 8 7; }
+      .arrow { stroke: #222; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .arrow-soft { stroke: #666; stroke-width: 2.5; fill: none; stroke-dasharray: 7 7; marker-end: url(#arrowSoft); }
+      .flow-label { font: 700 14px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .section { fill: none; stroke: #c7bfae; stroke-width: 2; rx: 24; ry: 24; }
+    </style>
+    <marker id="arrow" markerWidth="13" markerHeight="13" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#222"/>
+    </marker>
+    <marker id="arrowSoft" markerWidth="13" markerHeight="13" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#666"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1800" height="1200"/>
+  <text class="title" x="70" y="72">当前网页游戏低保真线框图</text>
+  <text class="note" x="72" y="108">目标：先看页面层级、信息优先级和跳转关系，暂不表达最终视觉风格</text>
+
+  <rect class="section" x="45" y="140" width="1710" height="470"/>
+  <text class="note" x="75" y="176">主体验路径</text>
+
+  <!-- Home -->
+  <g transform="translate(75 205)">
+    <rect class="phone" x="0" y="0" width="220" height="355"/>
+    <text class="screen-title" x="26" y="43">首页</text>
+    <rect class="image" x="25" y="62" width="170" height="95"/>
+    <line class="line" x1="50" y1="92" x2="170" y2="92"/>
+    <line class="line" x1="70" y1="122" x2="150" y2="122"/>
+    <rect class="button" x="35" y="185" width="150" height="38"/>
+    <text class="button-text" x="79" y="210">开始</text>
+    <rect class="button2" x="35" y="236" width="150" height="34"/>
+    <text class="button-text2" x="67" y="258">继续旅程</text>
+    <rect class="button2" x="35" y="282" width="68" height="32"/>
+    <text class="tiny" x="56" y="303">设置</text>
+    <rect class="button2" x="117" y="282" width="68" height="32"/>
+    <text class="tiny" x="137" y="303">成就</text>
+  </g>
+
+  <!-- Map overview -->
+  <g transform="translate(365 205)">
+    <rect class="phone" x="0" y="0" width="220" height="355"/>
+    <text class="screen-title" x="26" y="43">地图总览</text>
+    <text class="screen-sub" x="26" y="68">选择下一步</text>
+    <rect class="box" x="25" y="88" width="170" height="58"/>
+    <text class="label" x="51" y="123">节点探索</text>
+    <rect class="box" x="25" y="160" width="170" height="58"/>
+    <text class="label" x="52" y="195">支线玩法</text>
+    <rect class="box" x="25" y="232" width="170" height="58"/>
+    <text class="label" x="50" y="267">继续主线</text>
+    <rect class="nav" x="22" y="308" width="176" height="28"/>
+    <text class="tiny" x="38" y="327">主页  地图  角色  终端</text>
+  </g>
+
+  <!-- Node list -->
+  <g transform="translate(655 205)">
+    <rect class="phone" x="0" y="0" width="220" height="355"/>
+    <text class="screen-title" x="26" y="43">节点列表</text>
+    <rect class="image" x="25" y="62" width="170" height="112"/>
+    <circle cx="67" cy="132" r="11" fill="#fff" stroke="#222" stroke-width="2"/>
+    <circle cx="136" cy="92" r="11" fill="#fff" stroke="#222" stroke-width="2"/>
+    <circle cx="112" cy="138" r="11" fill="#222"/>
+    <rect class="button2" x="25" y="188" width="170" height="28"/>
+    <text class="tiny" x="54" y="207">定位并刷新地图</text>
+    <rect class="box-soft" x="25" y="228" width="170" height="36"/>
+    <text class="tiny" x="40" y="251">洲头渡口  可进入</text>
+    <rect class="box-soft" x="25" y="272" width="170" height="36"/>
+    <text class="tiny" x="40" y="295">远钟台  280m</text>
+    <rect class="nav" x="22" y="318" width="176" height="20"/>
+  </g>
+
+  <!-- Node detail -->
+  <g transform="translate(945 205)">
+    <rect class="phone" x="0" y="0" width="220" height="355"/>
+    <text class="screen-title" x="26" y="43">节点详情</text>
+    <rect class="box" x="25" y="65" width="170" height="68"/>
+    <text class="label" x="50" y="94">洲头渡口</text>
+    <text class="tiny" x="47" y="117">节点说明 / 任务意义</text>
+    <rect class="image" x="25" y="148" width="170" height="70"/>
+    <text class="tiny" x="62" y="188">明信片奖励预览</text>
+    <rect class="button" x="35" y="239" width="150" height="36"/>
+    <text class="button-text" x="76" y="262">开始任务</text>
+    <rect class="button2" x="35" y="286" width="150" height="32"/>
+    <text class="button-text2" x="71" y="307">跳过任务</text>
+  </g>
+
+  <!-- Photo task -->
+  <g transform="translate(1235 205)">
+    <rect class="phone" x="0" y="0" width="220" height="355"/>
+    <text class="screen-title" x="26" y="43">拍照任务</text>
+    <text class="screen-sub" x="26" y="68">3 个目标</text>
+    <rect class="box-soft" x="25" y="88" width="170" height="42"/>
+    <text class="tiny" x="50" y="114">老码头  已拍摄</text>
+    <rect class="box-soft" x="25" y="140" width="170" height="42"/>
+    <text class="tiny" x="58" y="166">水纹  拍摄</text>
+    <rect class="box-soft" x="25" y="192" width="170" height="42"/>
+    <text class="tiny" x="58" y="218">树影  拍摄</text>
+    <rect class="image" x="25" y="252" width="170" height="56"/>
+    <text class="tiny" x="63" y="285">完成后显示奖励</text>
+    <rect class="nav" x="22" y="322" width="176" height="16"/>
+  </g>
+
+  <!-- AR -->
+  <g transform="translate(1515 205)">
+    <rect class="phone" x="0" y="0" width="220" height="355"/>
+    <text class="screen-title" x="26" y="43">AR 引导</text>
+    <rect class="image" x="25" y="65" width="170" height="220"/>
+    <rect class="box-soft" x="42" y="82" width="136" height="30"/>
+    <text class="tiny" x="66" y="102">方向 / 声强</text>
+    <circle cx="110" cy="180" r="48" fill="none" stroke="#222" stroke-width="3"/>
+    <line class="dash" x1="110" y1="128" x2="110" y2="232"/>
+    <line class="dash" x1="58" y1="180" x2="162" y2="180"/>
+    <rect class="button2" x="45" y="300" width="130" height="32"/>
+    <text class="button-text2" x="80" y="321">关闭 AR</text>
+  </g>
+
+  <path class="arrow" d="M295 382 L365 382"/>
+  <path class="arrow" d="M585 382 L655 382"/>
+  <path class="arrow" d="M875 382 L945 382"/>
+  <path class="arrow" d="M1165 382 L1235 382"/>
+  <path class="arrow" d="M1455 382 L1515 382"/>
+
+  <rect class="section" x="45" y="660" width="1710" height="430"/>
+  <text class="note" x="75" y="696">主线、支线与玩家系统</text>
+
+  <!-- Journey -->
+  <g transform="translate(110 735)">
+    <rect class="phone" x="0" y="0" width="260" height="300"/>
+    <text class="screen-title" x="28" y="42">主线旅程页</text>
+    <rect class="box-soft" x="28" y="62" width="204" height="42"/>
+    <text class="tiny" x="48" y="88">阶段标题 / 状态标签</text>
+    <rect class="image" x="42" y="122" width="176" height="74"/>
+    <text class="tiny" x="79" y="163">主线视觉反馈</text>
+    <rect class="box-soft" x="28" y="214" width="204" height="38"/>
+    <text class="tiny" x="47" y="238">阶段小游戏联调面板</text>
+    <rect class="button" x="55" y="265" width="150" height="28"/>
+    <text class="button-text" x="82" y="284">推进主线</text>
+  </g>
+
+  <!-- Stage flow -->
+  <g transform="translate(450 740)">
+    <text class="screen-title" x="0" y="28">主线阶段流</text>
+    <rect class="box" x="0" y="55" width="150" height="42"/>
+    <text class="label" x="45" y="82">guiding</text>
+    <rect class="box" x="190" y="55" width="150" height="42"/>
+    <text class="label" x="218" y="82">approaching</text>
+    <rect class="box" x="380" y="55" width="150" height="42"/>
+    <text class="label" x="410" y="82">resonance</text>
+    <rect class="box" x="570" y="55" width="150" height="42"/>
+    <text class="label" x="600" y="82">completion</text>
+    <rect class="box" x="760" y="55" width="130" height="42"/>
+    <text class="label" x="795" y="82">finale</text>
+    <path class="arrow" d="M150 76 L190 76"/>
+    <path class="arrow" d="M340 76 L380 76"/>
+    <path class="arrow" d="M530 76 L570 76"/>
+    <path class="arrow" d="M720 76 L760 76"/>
+    <rect class="box-soft" x="0" y="135" width="890" height="70"/>
+    <text class="label" x="24" y="165">阶段小游戏接口</text>
+    <text class="tiny" x="24" y="190">config / progress / result：river-sound、island-light、memory-resonance</text>
+  </g>
+
+  <!-- Character -->
+  <g transform="translate(1120 735)">
+    <rect class="phone" x="0" y="0" width="220" height="300"/>
+    <text class="screen-title" x="26" y="42">角色档案</text>
+    <circle cx="110" cy="90" r="33" fill="#eee" stroke="#222" stroke-width="2"/>
+    <rect class="box-soft" x="35" y="140" width="150" height="34"/>
+    <text class="tiny" x="68" y="162">昵称 / 称号</text>
+    <rect class="box-soft" x="35" y="188" width="150" height="34"/>
+    <text class="tiny" x="62" y="210">等级 / 明信片</text>
+    <rect class="box-soft" x="35" y="236" width="150" height="34"/>
+    <text class="tiny" x="74" y="258">成就数</text>
+  </g>
+
+  <!-- Terminal -->
+  <g transform="translate(1440 735)">
+    <rect class="phone" x="0" y="0" width="220" height="300"/>
+    <text class="screen-title" x="26" y="42">玩家终端</text>
+    <rect class="box-soft" x="25" y="63" width="170" height="36"/>
+    <text class="tiny" x="58" y="86">头像 / 昵称</text>
+    <rect class="box-soft" x="25" y="110" width="170" height="36"/>
+    <text class="tiny" x="54" y="133">探索概况</text>
+    <rect class="box-soft" x="25" y="157" width="170" height="36"/>
+    <text class="tiny" x="62" y="180">成就列表</text>
+    <rect class="box-soft" x="25" y="204" width="170" height="36"/>
+    <text class="tiny" x="54" y="227">明信片收藏</text>
+    <rect class="box-soft" x="25" y="251" width="170" height="28"/>
+    <text class="tiny" x="71" y="270">系统设置</text>
+  </g>
+
+  <!-- Side quest -->
+  <g transform="translate(450 975)">
+    <rect class="box-soft" x="0" y="0" width="890" height="60"/>
+    <text class="label" x="24" y="26">支线小游戏：投石镇江</text>
+    <text class="tiny" x="24" y="48">从地图总览进入，以 iframe 承载，结束后返回地图总览，不参与主线阶段推进</text>
+  </g>
+
+  <path class="arrow" d="M1625 560 C1560 640, 390 640, 250 735"/>
+  <text class="flow-label" x="650" y="640">获得明信片后进入 AR，再回到主线推进</text>
+  <path class="arrow-soft" d="M475 290 C485 165, 1220 160, 1520 255"/>
+  <text class="flow-label" x="760" y="165">地图总览也可直接继续主线</text>
+  <path class="arrow-soft" d="M475 420 C470 620, 815 925, 450 1005"/>
+  <text class="flow-label" x="520" y="1017">支线从地图独立进入</text>
+  <path class="arrow-soft" d="M285 1035 C570 1145, 1185 1138, 1230 1035"/>
+  <text class="flow-label" x="705" y="1134">角色/终端是全局查看入口，不打断主线</text>
+</svg>

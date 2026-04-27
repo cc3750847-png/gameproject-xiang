@@ -1,0 +1,8 @@
+<svg width="900" height="1600" viewBox="0 0 900 1600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="900" height="1600" rx="40" fill="#0E151A"/>
+  <rect x="36" y="36" width="828" height="1528" rx="30" stroke="#D7C39A" stroke-opacity="0.28" stroke-width="2" stroke-dasharray="14 14"/>
+  <circle cx="448" cy="272" r="136" fill="#D7C39A" fill-opacity="0.16"/>
+  <path d="M252 1198C252 994.651 372.994 830 522 830H378C527.006 830 648 994.651 648 1198V1380H252V1198Z" fill="#D7C39A" fill-opacity="0.14"/>
+  <path d="M188 1322L704 1322" stroke="#D7C39A" stroke-opacity="0.2" stroke-width="18" stroke-linecap="round"/>
+  <text x="450" y="1486" text-anchor="middle" fill="#F3EBDD" font-family="serif" font-size="46" letter-spacing="5">DAYU FULL</text>
+</svg>

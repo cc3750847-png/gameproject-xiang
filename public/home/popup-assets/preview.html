@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>全局弹窗资产预览</title>
+    <style>
+      :root {
+        color: #713f24;
+        background:
+          radial-gradient(circle at 50% 12%, rgba(245, 196, 111, 0.24), transparent 34%),
+          linear-gradient(180deg, #fbf2e8 0%, #f0dfce 100%);
+        font-family: "Source Han Serif SC", "Source Han Serif CN", "Noto Serif SC", "Songti SC", "SimSun", serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+      }
+
+      main {
+        width: min(1120px, 100%);
+        margin: 0 auto;
+        padding: 28px 18px 64px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.8rem, 6vw, 3.2rem);
+        line-height: 1.08;
+      }
+
+      .lead {
+        margin: 0 0 28px;
+        color: rgba(113, 63, 36, 0.72);
+        line-height: 1.7;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 22px;
+        align-items: start;
+      }
+
+      .sample {
+        position: relative;
+        min-height: 360px;
+        display: grid;
+        place-items: center;
+        padding: 18px;
+        border: 1px solid rgba(196, 90, 42, 0.16);
+        border-radius: 18px;
+        background:
+          linear-gradient(45deg, rgba(255,255,255,.42) 25%, transparent 25% 75%, rgba(255,255,255,.42) 75%) 0 0 / 28px 28px,
+          linear-gradient(45deg, rgba(255,255,255,.42) 25%, transparent 25% 75%, rgba(255,255,255,.42) 75%) 14px 14px / 28px 28px,
+          rgba(255, 248, 241, 0.54);
+        overflow: hidden;
+      }
+
+      .sample--wide {
+        grid-column: 1 / -1;
+        min-height: 260px;
+      }
+
+      .frame {
+        width: min(100%, 340px);
+        height: auto;
+      }
+
+      .frame--story {
+        width: min(100%, 300px);
+      }
+
+      .frame--sheet,
+      .frame--toast {
+        width: min(100%, 620px);
+      }
+
+      .overlay-copy {
+        position: absolute;
+        width: min(70%, 300px);
+        display: grid;
+        justify-items: center;
+        gap: 10px;
+        text-align: center;
+        pointer-events: none;
+      }
+
+      .maple {
+        position: absolute;
+        width: 76px;
+        height: 76px;
+        object-fit: contain;
+        pointer-events: none;
+      }
+
+      .maple--watermark {
+        width: 150px;
+        height: 112px;
+        opacity: 0.9;
+      }
+
+      .maple--tl {
+        left: 18%;
+        top: 23%;
+        transform: rotate(-18deg);
+      }
+
+      .maple--br {
+        right: 18%;
+        bottom: 17%;
+        transform: rotate(16deg);
+      }
+
+      .maple--small {
+        width: 44px;
+        height: 44px;
+        opacity: 0.72;
+      }
+
+      .overlay-copy h2,
+      .overlay-copy p {
+        margin: 0;
+      }
+
+      .overlay-copy h2 {
+        font-size: 1.28rem;
+        line-height: 1.25;
+      }
+
+      .overlay-copy p {
+        color: rgba(113, 63, 36, 0.72);
+        line-height: 1.55;
+        font-family: "Source Han Serif SC", "Source Han Serif CN", "Noto Serif SC", "Songti SC", "SimSun", serif;
+        font-size: 0.9rem;
+      }
+
+      .badge {
+        width: 58px;
+        height: 58px;
+      }
+
+      .button-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 6px;
+      }
+
+      .pill {
+        min-width: 88px;
+        padding: 9px 14px;
+        border: 1px solid rgba(196, 90, 42, 0.22);
+        border-radius: 999px;
+        background: rgba(255, 247, 237, 0.72);
+        font-family: "Source Han Serif SC", "Source Han Serif CN", "Noto Serif SC", "Songti SC", "SimSun", serif;
+        font-size: 0.84rem;
+        font-weight: 700;
+      }
+
+      .asset-strip {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 16px;
+      }
+
+      .asset-strip img {
+        width: 78px;
+        height: 78px;
+        object-fit: contain;
+      }
+
+      .close {
+        position: absolute;
+        right: 18%;
+        top: 16%;
+        width: 44px;
+        height: 44px;
+      }
+
+      @media (max-width: 700px) {
+        .sample {
+          min-height: 330px;
+        }
+
+        .overlay-copy {
+          width: min(72%, 260px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>全局弹窗资产预览</h1>
+      <p class="lead">用于新手引导、节点说明、确认、权限失败、奖励结算、剧情段落和轻提示。实际前端可把文本与按钮叠在这些透明 SVG 外框上。</p>
+
+      <section class="grid">
+        <article class="sample">
+          <img class="frame" src="./modal-frame-maple-image2.png" alt="中置弹窗外框" />
+          <img class="close" src="./close-button.svg" alt="" />
+          <div class="overlay-copy">
+            <img class="badge" src="./badge-info-image2.png" alt="" />
+            <h2>节点任务说明</h2>
+            <p>这里承载玩法说明、背景补充和当前目标，主页面只保留行动入口。</p>
+            <div class="button-row"><span class="pill">开始</span><span class="pill">稍后</span></div>
+          </div>
+        </article>
+
+        <article class="sample">
+          <img class="frame" src="./confirm-frame.svg" alt="确认弹窗外框" />
+          <img class="maple maple--small maple--tl" src="./maple-leaf-accent.svg" alt="" />
+          <div class="overlay-copy">
+            <img class="badge" src="./badge-warning-image2.png" alt="" />
+            <h2>确认跳过</h2>
+            <p>用于退出、跳过任务、权限失败后的重试确认。</p>
+            <div class="button-row"><span class="pill">取消</span><span class="pill">确认</span></div>
+          </div>
+        </article>
+
+        <article class="sample">
+          <img class="frame" src="./reward-frame.svg" alt="奖励弹窗外框" />
+          <img class="maple maple--tl" src="./maple-leaf-accent.svg" alt="" />
+          <img class="maple maple--small maple--br" src="./maple-leaf-accent.svg" alt="" />
+          <div class="overlay-copy">
+            <img class="badge" src="./badge-reward-image2.png" alt="" />
+            <h2>获得明信片</h2>
+            <p>用于成就解锁、奖励反馈、节点完成与终章结算。</p>
+            <div class="button-row"><span class="pill">收下</span></div>
+          </div>
+        </article>
+
+        <article class="sample">
+          <img class="frame frame--story" src="./story-frame.svg" alt="剧情弹窗外框" />
+          <img class="maple maple--watermark maple--tl" src="./maple-leaf-watermark.svg" alt="" />
+          <div class="overlay-copy">
+            <h2>剧情段落</h2>
+            <img src="./popup-divider.svg" alt="" style="width: 170px" />
+            <p>适合承载八关节点背景、角色身份说明和终章叙事。</p>
+          </div>
+        </article>
+
+        <article class="sample sample--wide">
+          <img class="frame frame--sheet" src="./bottom-sheet-frame.svg" alt="底部弹层外框" />
+          <img class="maple maple--small maple--br" src="./maple-leaf-accent.svg" alt="" />
+          <div class="overlay-copy">
+            <h2>底部半屏弹层</h2>
+            <p>适合地图节点详情、任务目标、角色/成就摘要。</p>
+          </div>
+        </article>
+
+        <article class="sample sample--wide">
+          <img class="frame frame--toast" src="./toast-strip.svg" alt="Toast 条外框" />
+          <img class="maple maple--small maple--tl" src="./maple-leaf-accent.svg" alt="" />
+          <div class="overlay-copy">
+            <p>定位成功 / 已拍摄 / 成就已解锁 / 保存完成</p>
+          </div>
+        </article>
+
+        <article class="sample sample--wide">
+          <div class="asset-strip">
+            <img src="./badge-info-image2.png" alt="info" />
+            <img src="./badge-success-image2.png" alt="success" />
+            <img src="./badge-warning-image2.png" alt="warning" />
+            <img src="./badge-error-image2.png" alt="error" />
+            <img src="./badge-reward-image2.png" alt="reward" />
+            <img src="./close-button.svg" alt="close" />
+            <img src="./popup-divider.svg" alt="divider" style="width: 180px" />
+            <img src="./maple-leaf-accent.svg" alt="maple leaf" />
+            <img src="./maple-leaf-watermark.svg" alt="maple watermark" style="width: 120px" />
+          </div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

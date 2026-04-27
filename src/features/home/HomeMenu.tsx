@@ -4,46 +4,136 @@ type HomeMenuProps = {
   onStart: () => void;
   onOpenAchievements: () => void;
   onOpenSettings: () => void;
-  onExit: () => void;
 };
 
-export function HomeMenu({ onStart, onOpenAchievements, onOpenSettings, onExit }: HomeMenuProps) {
+type JourneyModeSelectProps = {
+  onSelectSingle: () => void;
+  onSelectTeam: () => void;
+  onBack: () => void;
+};
+
+const menuItems = [
+  {
+    label: '开始游戏',
+    asset: '/home/extracted/button-start-new.png',
+    tone: 'primary',
+    action: 'start',
+  },
+  {
+    label: '继续旅程',
+    asset: '/home/extracted/button-continue-new.png',
+    tone: 'paper',
+    action: 'continue',
+  },
+  {
+    label: '设置选项',
+    asset: '/home/extracted/button-settings-new.png',
+    tone: 'paper',
+    action: 'settings',
+  },
+  {
+    label: '成就图鉴',
+    asset: '/home/extracted/button-achievements-new.png',
+    tone: 'paper',
+    action: 'achievements',
+  },
+] as const;
+
+export function HomeMenu({ onStart, onOpenAchievements, onOpenSettings }: HomeMenuProps) {
+  function handleMenuAction(action: (typeof menuItems)[number]['action']) {
+    if (action === 'settings') {
+      onOpenSettings();
+      return;
+    }
+
+    if (action === 'achievements') {
+      onOpenAchievements();
+      return;
+    }
+
+    onStart();
+  }
+
   return (
     <section className="home-menu" aria-label="游戏首页">
       <div className="home-menu__background" aria-hidden="true" />
-      <div className="home-menu__wash" aria-hidden="true" />
+      <div className="home-menu__atmosphere" aria-hidden="true" />
 
       <div className="home-menu__content">
-        <header className="home-menu__hero">
-          <div className="home-menu__title-block" aria-label="首页标题预留区">
-            <p className="home-menu__eyebrow">Xiang River Journey</p>
-            <div className="home-menu__title-slot">
-              <span className="home-menu__title-placeholder">游戏标题预留</span>
-              <span className="home-menu__subtitle-placeholder">副标题 / 题字 / 署名位置</span>
-            </div>
-            <img className="home-menu__divider" src="/home/divider.png" alt="" />
-          </div>
+        <header className="home-menu__brand" aria-label="首页标题区">
+          <img
+            className="home-menu__wordmark"
+            src="/home/extracted/title-wordmark-image2.png"
+            alt="江水绿洲，沙海中的希望与家园"
+          />
         </header>
 
-        <aside className="home-menu__panel home-menu__panel--compact" aria-label="首页主菜单">
-          <div className="home-menu__actions">
-            <button type="button" className="home-menu__action home-menu__action--primary" onClick={onStart} aria-label="开始游戏">
-              <img src="/home/button-start.png" alt="" />
+        <nav className="home-menu__panel" aria-label="首页主菜单">
+          {menuItems.map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              className={`home-menu__action home-menu__action--${item.tone}`}
+              aria-label={item.label}
+              onClick={() => {
+                handleMenuAction(item.action);
+              }}
+            >
+              <img className="home-menu__action-art" src={item.asset} alt="" aria-hidden="true" />
             </button>
+          ))}
+        </nav>
+      </div>
+    </section>
+  );
+}
 
-            <button type="button" className="home-menu__action" onClick={onOpenAchievements} aria-label="成就图鉴">
-              <img src="/home/button-achievement.png" alt="" />
-            </button>
+export function JourneyModeSelect({ onSelectSingle, onSelectTeam, onBack }: JourneyModeSelectProps) {
+  return (
+    <section className="journey-mode-select" aria-label="选择旅程方式">
+      <div
+        className="journey-mode-select__background"
+        data-asset="/home/mode-select/image2-assets/background-clean.png"
+        aria-hidden="true"
+      />
 
-            <button type="button" className="home-menu__action" onClick={onOpenSettings} aria-label="设置选项">
-              <img src="/home/button-settings.png" alt="" />
-            </button>
-
-            <button type="button" className="home-menu__action" onClick={onExit} aria-label="退出游戏">
-              <img src="/home/button-exit.png" alt="" />
-            </button>
-          </div>
-        </aside>
+      <div className="journey-mode-select__panel">
+        <img
+          className="journey-mode-select__title"
+          src="/home/mode-select/exact-split/assets/title-select-journey.png"
+          alt="选择旅程方式"
+        />
+        <button
+          type="button"
+          className="journey-mode-select__choice journey-mode-select__choice--single"
+          aria-label="单人模式"
+          onClick={onSelectSingle}
+        >
+          <img src="/home/mode-select/exact-split/assets/button-single-active.png" alt="" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className="journey-mode-select__choice journey-mode-select__choice--team"
+          aria-label="组队模式"
+          onClick={onSelectTeam}
+        >
+          <img src="/home/mode-select/exact-split/assets/button-team-idle.png" alt="" aria-hidden="true" />
+        </button>
+        <img
+          className="journey-mode-select__hint"
+          src="/home/mode-select/exact-split/assets/hint-enter-main.png"
+          alt=""
+          aria-hidden="true"
+        />
+        <img
+          className="journey-mode-select__divider"
+          src="/home/mode-select/exact-split/assets/divider-long.png"
+          alt=""
+          aria-hidden="true"
+        />
+        <button type="button" className="journey-mode-select__back" aria-label="返回首页" onClick={onBack}>
+          <img src="/home/mode-select/exact-split/assets/button-back-text.png" alt="" aria-hidden="true" />
+        </button>
       </div>
     </section>
   );

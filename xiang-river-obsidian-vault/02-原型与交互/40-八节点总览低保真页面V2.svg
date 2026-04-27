@@ -1,0 +1,229 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="1360" viewBox="0 0 1900 1360" role="img" aria-labelledby="title desc">
+  <title id="title">八节点总览低保真页面 V2</title>
+  <desc id="desc">修正版低保真：保留初始界面，开始游戏后弹出单人/组队模式选择，再进入主界面与八节点总览。</desc>
+  <defs>
+    <style>
+      .bg { fill: #f5f1e8; }
+      .title { font: 700 46px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .subtitle { font: 400 22px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #555; }
+      .section { fill: rgba(255,255,255,0.62); stroke: #d2c5b2; stroke-width: 2; rx: 26; ry: 26; }
+      .phone { fill: #fffdfa; stroke: #222; stroke-width: 4; rx: 34; ry: 34; }
+      .phone-title { font: 700 21px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .label { font: 700 15px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .small { font: 400 13px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #555; }
+      .tiny { font: 400 12px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #666; }
+      .box { fill: #f8f8f8; stroke: #333; stroke-width: 2; rx: 9; ry: 9; }
+      .box2 { fill: #ffffff; stroke: #777; stroke-width: 1.6; rx: 9; ry: 9; }
+      .open { fill: #fff; stroke: #222; stroke-width: 2.2; rx: 10; ry: 10; }
+      .locked { fill: #eeeeee; stroke: #777; stroke-width: 1.8; stroke-dasharray: 5 5; rx: 10; ry: 10; }
+      .important { fill: #fff8e8; stroke: #222; stroke-width: 3; rx: 10; ry: 10; }
+      .map { fill: #e9eee8; stroke: #333; stroke-width: 2; rx: 12; ry: 12; }
+      .modal { fill: #fffdfa; stroke: #222; stroke-width: 3; rx: 16; ry: 16; }
+      .btn { fill: #222; stroke: #222; stroke-width: 2; rx: 12; ry: 12; }
+      .btn2 { fill: #fff; stroke: #222; stroke-width: 2; rx: 12; ry: 12; }
+      .btn-text { font: 700 14px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #fff; }
+      .btn-text2 { font: 700 14px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .chip { fill: #222; rx: 12; ry: 12; }
+      .chip2 { fill: #fff; stroke: #222; stroke-width: 1.6; rx: 12; ry: 12; }
+      .chip-text { font: 700 12px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #fff; }
+      .chip-text2 { font: 700 12px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .arrow { stroke: #222; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .arrow-soft { stroke: #666; stroke-width: 2.5; fill: none; stroke-dasharray: 8 8; marker-end: url(#arrowSoft); }
+      .flow { font: 700 14px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .callout { fill: #fffdf8; stroke: #d2c2aa; stroke-width: 1.8; rx: 15; ry: 15; }
+      .callout-title { font: 700 18px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+    </style>
+    <marker id="arrow" markerWidth="13" markerHeight="13" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#222"/>
+    </marker>
+    <marker id="arrowSoft" markerWidth="13" markerHeight="13" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#666"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1900" height="1360"/>
+  <text class="title" x="70" y="76">八节点总览低保真页面 V2</text>
+  <text class="subtitle" x="72" y="116">修正：保留初始界面；开始后弹出单人/组队模式；页面内去掉左上角说明性小字</text>
+
+  <rect class="section" x="50" y="155" width="1800" height="690"/>
+  <text class="subtitle" x="82" y="195">入口链路与八节点总览</text>
+
+  <!-- Initial screen -->
+  <g transform="translate(80 245)">
+    <rect class="phone" x="0" y="0" width="245" height="500"/>
+    <text class="phone-title" x="28" y="54">初始界面</text>
+
+    <rect class="map" x="35" y="92" width="175" height="145"/>
+    <path d="M58 188 C90 142, 128 164, 176 116" fill="none" stroke="#333" stroke-width="3"/>
+    <circle cx="70" cy="184" r="8" fill="#222"/>
+    <circle cx="154" cy="128" r="23" fill="none" stroke="#333" stroke-width="2" stroke-dasharray="6 5"/>
+
+    <rect class="box2" x="35" y="266" width="175" height="78"/>
+    <text class="label" x="58" y="299">橘子洲·时空八景</text>
+    <text class="small" x="58" y="323">沿江入戏，八景成章</text>
+
+    <rect class="btn" x="35" y="382" width="175" height="40"/>
+    <text class="btn-text" x="88" y="407">开始游戏</text>
+    <rect class="btn2" x="35" y="436" width="175" height="32"/>
+    <text class="btn-text2" x="88" y="457">继续旅程</text>
+  </g>
+
+  <!-- Mode modal -->
+  <g transform="translate(380 245)">
+    <rect class="phone" x="0" y="0" width="245" height="500"/>
+    <text class="phone-title" x="28" y="54">初始界面</text>
+
+    <rect class="map" x="35" y="92" width="175" height="145"/>
+    <path d="M58 188 C90 142, 128 164, 176 116" fill="none" stroke="#333" stroke-width="3"/>
+    <circle cx="70" cy="184" r="8" fill="#222"/>
+    <circle cx="154" cy="128" r="23" fill="none" stroke="#333" stroke-width="2" stroke-dasharray="6 5"/>
+    <rect x="0" y="0" width="245" height="500" rx="34" ry="34" fill="rgba(0,0,0,0.18)"/>
+
+    <rect class="modal" x="28" y="168" width="189" height="190"/>
+    <text class="label" x="72" y="206">选择游玩模式</text>
+    <rect class="btn" x="48" y="232" width="149" height="36"/>
+    <text class="btn-text" x="91" y="255">单人模式</text>
+    <rect class="btn2" x="48" y="282" width="149" height="36"/>
+    <text class="btn-text2" x="91" y="305">组队模式</text>
+    <text class="tiny" x="56" y="336">组队可触发身份协作加成</text>
+  </g>
+
+  <!-- Main screen after mode -->
+  <g transform="translate(680 245)">
+    <rect class="phone" x="0" y="0" width="245" height="500"/>
+    <text class="phone-title" x="28" y="54">主界面</text>
+
+    <rect class="box2" x="25" y="84" width="195" height="56"/>
+    <text class="label" x="45" y="111">单人模式</text>
+    <text class="tiny" x="45" y="130">已进入聆音主线</text>
+
+    <rect class="map" x="25" y="162" width="195" height="126"/>
+    <circle cx="74" cy="236" r="7" fill="#222"/>
+    <circle cx="152" cy="210" r="28" fill="none" stroke="#777" stroke-width="2" stroke-dasharray="5 5"/>
+    <text class="tiny" x="42" y="267">未知回响区</text>
+
+    <rect class="box" x="25" y="308" width="195" height="62"/>
+    <text class="label" x="45" y="334">路线节点</text>
+    <text class="tiny" x="45" y="353">8 个节点 · 3 个已开放</text>
+
+    <rect class="btn" x="35" y="392" width="175" height="36"/>
+    <text class="btn-text" x="75" y="415">开始听声辨位</text>
+    <rect class="btn2" x="35" y="438" width="175" height="30"/>
+    <text class="btn-text2" x="78" y="458">查看八节点</text>
+  </g>
+
+  <!-- Eight node overview -->
+  <g transform="translate(980 215)">
+    <rect class="phone" x="0" y="0" width="310" height="560"/>
+    <text class="phone-title" x="28" y="54">八节点总览</text>
+
+    <rect class="chip" x="28" y="78" width="74" height="24"/>
+    <text class="chip-text" x="46" y="95">开放</text>
+    <rect class="chip2" x="112" y="78" width="84" height="24"/>
+    <text class="chip-text2" x="130" y="95">未开始</text>
+    <rect class="chip2" x="206" y="78" width="72" height="24"/>
+    <text class="chip-text2" x="222" y="95">重要</text>
+
+    <rect class="open" x="25" y="120" width="260" height="42"/>
+    <circle cx="47" cy="141" r="8" fill="#222"/>
+    <text class="label" x="64" y="140">1 1925·觉醒</text>
+    <text class="tiny" x="196" y="140">开放</text>
+    <text class="tiny" x="64" y="156">身份确认 / 入戏起点</text>
+
+    <rect class="open" x="25" y="172" width="260" height="42"/>
+    <circle cx="47" cy="193" r="8" fill="#222"/>
+    <text class="label" x="64" y="192">2 沁园·挥毫</text>
+    <text class="tiny" x="196" y="192">开放</text>
+    <text class="tiny" x="64" y="208">诗词朗诵 / AR 临摹</text>
+
+    <rect class="locked" x="25" y="224" width="260" height="36"/>
+    <text class="label" x="42" y="247">3 朱张·问学</text>
+    <text class="tiny" x="196" y="247">未开始</text>
+
+    <rect class="locked" x="25" y="270" width="260" height="36"/>
+    <text class="label" x="42" y="293">4 天问·觉醒</text>
+    <text class="tiny" x="196" y="293">未开始</text>
+
+    <rect class="locked" x="25" y="316" width="260" height="36"/>
+    <text class="label" x="42" y="339">5 百工·传承</text>
+    <text class="tiny" x="196" y="339">未开始</text>
+
+    <rect class="locked" x="25" y="362" width="260" height="36"/>
+    <text class="label" x="42" y="385">6 百虹·镇守</text>
+    <text class="tiny" x="196" y="385">未开始</text>
+
+    <rect class="important" x="25" y="408" width="260" height="48"/>
+    <path d="M47 420 L52 432 L65 434 L55 442 L58 455 L47 448 L36 455 L39 442 L29 434 L42 432 Z" fill="#222"/>
+    <text class="label" x="72" y="433">7 拱极·守望</text>
+    <text class="tiny" x="196" y="433">重要开放</text>
+    <text class="tiny" x="72" y="450">投石镇江 / 强提示</text>
+
+    <rect class="locked" x="25" y="466" width="260" height="36"/>
+    <text class="label" x="42" y="489">8 湘君·鼓瑟</text>
+    <text class="tiny" x="196" y="489">未开始</text>
+
+    <rect class="btn2" x="45" y="516" width="220" height="28"/>
+    <text class="btn-text2" x="120" y="535">返回主界面</text>
+  </g>
+
+  <!-- Locked prompt -->
+  <g transform="translate(1365 245)">
+    <rect class="phone" x="0" y="0" width="245" height="500"/>
+    <text class="phone-title" x="28" y="54">八节点总览</text>
+
+    <rect class="locked" x="25" y="94" width="195" height="42"/>
+    <text class="label" x="42" y="120">3 朱张·问学</text>
+    <text class="tiny" x="150" y="120">未开始</text>
+
+    <rect class="locked" x="25" y="150" width="195" height="42"/>
+    <text class="label" x="42" y="176">4 天问·觉醒</text>
+    <text class="tiny" x="150" y="176">未开始</text>
+
+    <rect x="0" y="0" width="245" height="500" rx="34" ry="34" fill="rgba(0,0,0,0.14)"/>
+    <rect class="modal" x="32" y="178" width="181" height="142"/>
+    <text class="label" x="72" y="215">节点未开始</text>
+    <text class="tiny" x="58" y="242">该路线将在后续开放</text>
+    <text class="tiny" x="58" y="262">请先完成已开放节点</text>
+    <rect class="btn2" x="72" y="280" width="100" height="28"/>
+    <text class="btn-text2" x="98" y="299">知道了</text>
+  </g>
+
+  <path class="arrow" d="M325 495 L380 495"/>
+  <text class="flow" x="332" y="475">开始</text>
+  <path class="arrow" d="M625 495 L680 495"/>
+  <text class="flow" x="628" y="475">选择模式</text>
+  <path class="arrow" d="M925 495 L980 495"/>
+  <text class="flow" x="912" y="475">查看八节点</text>
+  <path class="arrow-soft" d="M1290 380 L1365 380"/>
+  <text class="flow" x="1300" y="360">点未开始</text>
+
+  <rect class="section" x="50" y="885" width="1800" height="345"/>
+  <text class="subtitle" x="82" y="925">页面规则</text>
+
+  <g transform="translate(95 970)">
+    <rect class="callout" x="0" y="0" width="510" height="185"/>
+    <text class="callout-title" x="28" y="42">入口规则</text>
+    <text class="small" x="28" y="78">初始界面保留：玩家先看到项目入口和开始按钮。</text>
+    <text class="small" x="28" y="108">点击“开始游戏”后，不直接进主界面。</text>
+    <text class="small" x="28" y="138">先用弹窗选择“单人模式 / 组队模式”。</text>
+  </g>
+
+  <g transform="translate(695 970)">
+    <rect class="callout" x="0" y="0" width="510" height="185"/>
+    <text class="callout-title" x="28" y="42">八节点规则</text>
+    <text class="small" x="28" y="78">八个节点都显示，保证完整路线感。</text>
+    <text class="small" x="28" y="108">现阶段只开放 3 个，其余显示“未开始”。</text>
+    <text class="small" x="28" y="138">重要开放节点使用特殊图标和更强提示。</text>
+  </g>
+
+  <g transform="translate(1295 970)">
+    <rect class="callout" x="0" y="0" width="510" height="185"/>
+    <text class="callout-title" x="28" y="42">文案规则</text>
+    <text class="small" x="28" y="78">页面左上角不放说明性文案。</text>
+    <text class="small" x="28" y="108">说明信息放在弹窗、卡片或状态标签中。</text>
+    <text class="small" x="28" y="138">手机页面只保留标题、控件和必要状态。</text>
+  </g>
+
+  <rect class="callout" x="70" y="1260" width="1760" height="48"/>
+  <text class="callout-title" x="100" y="1291">修正版结论：初始界面 → 模式选择弹窗 → 主界面 → 八节点总览；未开放节点只提示未开始，重要节点用特殊图标强化。</text>
+</svg>

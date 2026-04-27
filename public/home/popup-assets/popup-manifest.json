@@ -1,0 +1,25 @@
+{
+  "frames": {
+    "modal": "/home/popup-assets/modal-frame-maple-image2.png",
+    "bottomSheet": "/home/popup-assets/bottom-sheet-frame.svg",
+    "confirm": "/home/popup-assets/confirm-frame.svg",
+    "reward": "/home/popup-assets/reward-frame.svg",
+    "story": "/home/popup-assets/story-frame.svg",
+    "toast": "/home/popup-assets/toast-strip.svg"
+  },
+  "controls": {
+    "close": "/home/popup-assets/close-button.svg",
+    "divider": "/home/popup-assets/popup-divider.svg"
+  },
+  "motifs": {
+    "mapleLeaf": "/home/popup-assets/maple-leaf-accent.svg",
+    "mapleWatermark": "/home/popup-assets/maple-leaf-watermark.svg"
+  },
+  "badges": {
+    "info": "/home/popup-assets/badge-info-image2.png",
+    "success": "/home/popup-assets/badge-success-image2.png",
+    "warning": "/home/popup-assets/badge-warning-image2.png",
+    "error": "/home/popup-assets/badge-error-image2.png",
+    "reward": "/home/popup-assets/badge-reward-image2.png"
+  }
+}

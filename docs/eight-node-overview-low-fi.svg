@@ -1,0 +1,246 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="1360" viewBox="0 0 1900 1360" role="img" aria-labelledby="title desc">
+  <title id="title">八节点总览低保真页面</title>
+  <desc id="desc">展示八个路线节点的总览页，其中三个现阶段开放，重要节点使用特殊图标，未开放节点显示未开始提示。</desc>
+  <defs>
+    <style>
+      .bg { fill: #f5f1e8; }
+      .title { font: 700 46px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .subtitle { font: 400 22px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #555; }
+      .section { fill: rgba(255,255,255,0.62); stroke: #d2c5b2; stroke-width: 2; rx: 26; ry: 26; }
+      .phone { fill: #fffdfa; stroke: #222; stroke-width: 4; rx: 34; ry: 34; }
+      .phone-title { font: 700 21px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .label { font: 700 15px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .small { font: 400 13px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #555; }
+      .tiny { font: 400 12px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #666; }
+      .box { fill: #f8f8f8; stroke: #333; stroke-width: 2; rx: 9; ry: 9; }
+      .box2 { fill: #ffffff; stroke: #777; stroke-width: 1.6; rx: 9; ry: 9; }
+      .open { fill: #fff; stroke: #222; stroke-width: 2.2; rx: 10; ry: 10; }
+      .locked { fill: #eeeeee; stroke: #777; stroke-width: 1.8; stroke-dasharray: 5 5; rx: 10; ry: 10; }
+      .important { fill: #fff8e8; stroke: #222; stroke-width: 3; rx: 10; ry: 10; }
+      .map { fill: #e9eee8; stroke: #333; stroke-width: 2; rx: 12; ry: 12; }
+      .modal { fill: #fffdfa; stroke: #222; stroke-width: 3; rx: 16; ry: 16; }
+      .btn { fill: #222; stroke: #222; stroke-width: 2; rx: 12; ry: 12; }
+      .btn2 { fill: #fff; stroke: #222; stroke-width: 2; rx: 12; ry: 12; }
+      .btn-text { font: 700 14px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #fff; }
+      .btn-text2 { font: 700 14px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .nav { fill: #f1f1f1; stroke: #333; stroke-width: 2; rx: 15; ry: 15; }
+      .line { stroke: #333; stroke-width: 2; fill: none; }
+      .dash { stroke: #555; stroke-width: 2; fill: none; stroke-dasharray: 7 7; }
+      .arrow { stroke: #222; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .arrow-soft { stroke: #666; stroke-width: 2.5; fill: none; stroke-dasharray: 8 8; marker-end: url(#arrowSoft); }
+      .flow { font: 700 14px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .callout { fill: #fffdf8; stroke: #d2c2aa; stroke-width: 1.8; rx: 15; ry: 15; }
+      .callout-title { font: 700 18px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .chip { fill: #222; rx: 12; ry: 12; }
+      .chip2 { fill: #fff; stroke: #222; stroke-width: 1.6; rx: 12; ry: 12; }
+      .chip-text { font: 700 12px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #fff; }
+      .chip-text2 { font: 700 12px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+    </style>
+    <marker id="arrow" markerWidth="13" markerHeight="13" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#222"/>
+    </marker>
+    <marker id="arrowSoft" markerWidth="13" markerHeight="13" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#666"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1900" height="1360"/>
+  <text class="title" x="70" y="76">八节点总览低保真页面</text>
+  <text class="subtitle" x="72" y="116">新增专门页面展示八个路线节点：现阶段开放 3 个，未开放节点显示“未开始”，重要节点使用特殊图标</text>
+
+  <rect class="section" x="50" y="155" width="1800" height="660"/>
+  <text class="subtitle" x="82" y="195">页面流：主界面 → 八节点总览 → 开放节点/未开始提示/重要节点特殊提示</text>
+
+  <!-- Main screen -->
+  <g transform="translate(85 245)">
+    <rect class="phone" x="0" y="0" width="250" height="470"/>
+    <text class="phone-title" x="28" y="43">主界面</text>
+    <text class="tiny" x="28" y="68">聆音主线中枢</text>
+
+    <rect class="box2" x="25" y="92" width="200" height="56"/>
+    <text class="label" x="45" y="119">当前状态</text>
+    <text class="tiny" x="45" y="138">附近有回响，等待辨位</text>
+
+    <rect class="map" x="25" y="168" width="200" height="112"/>
+    <circle cx="74" cy="236" r="7" fill="#222"/>
+    <circle cx="152" cy="210" r="28" fill="none" stroke="#777" stroke-width="2" stroke-dasharray="5 5"/>
+    <text class="tiny" x="42" y="265">地图预览：未知回响区</text>
+
+    <rect class="box" x="25" y="300" width="200" height="62"/>
+    <text class="label" x="45" y="326">路线节点</text>
+    <text class="tiny" x="45" y="345">8 个节点 · 3 个已开放</text>
+
+    <rect class="btn" x="35" y="382" width="180" height="36"/>
+    <text class="btn-text" x="75" y="405">开始听声辨位</text>
+    <rect class="btn2" x="35" y="428" width="180" height="30"/>
+    <text class="btn-text2" x="78" y="448">查看八节点</text>
+  </g>
+
+  <!-- Eight node overview -->
+  <g transform="translate(415 215)">
+    <rect class="phone" x="0" y="0" width="300" height="530"/>
+    <text class="phone-title" x="28" y="43">八节点总览</text>
+    <text class="tiny" x="28" y="68">当前开放：3 / 8</text>
+
+    <rect class="chip" x="28" y="84" width="74" height="24"/>
+    <text class="chip-text" x="46" y="101">开放</text>
+    <rect class="chip2" x="112" y="84" width="84" height="24"/>
+    <text class="chip-text2" x="130" y="101">未开始</text>
+    <rect class="chip2" x="206" y="84" width="66" height="24"/>
+    <text class="chip-text2" x="222" y="101">重要</text>
+
+    <rect class="open" x="25" y="126" width="250" height="42"/>
+    <circle cx="47" cy="147" r="8" fill="#222"/>
+    <text class="label" x="64" y="146">1 1925·觉醒</text>
+    <text class="tiny" x="184" y="146">开放</text>
+    <text class="tiny" x="64" y="162">身份确认 / 入戏起点</text>
+
+    <rect class="open" x="25" y="178" width="250" height="42"/>
+    <circle cx="47" cy="199" r="8" fill="#222"/>
+    <text class="label" x="64" y="198">2 沁园·挥毫</text>
+    <text class="tiny" x="184" y="198">开放</text>
+    <text class="tiny" x="64" y="214">诗词朗诵 / AR 临摹</text>
+
+    <rect class="locked" x="25" y="230" width="250" height="36"/>
+    <text class="label" x="42" y="253">3 朱张·问学</text>
+    <text class="tiny" x="184" y="253">未开始</text>
+
+    <rect class="locked" x="25" y="276" width="250" height="36"/>
+    <text class="label" x="42" y="299">4 天问·觉醒</text>
+    <text class="tiny" x="184" y="299">未开始</text>
+
+    <rect class="locked" x="25" y="322" width="250" height="36"/>
+    <text class="label" x="42" y="345">5 百工·传承</text>
+    <text class="tiny" x="184" y="345">未开始</text>
+
+    <rect class="locked" x="25" y="368" width="250" height="36"/>
+    <text class="label" x="42" y="391">6 百虹·镇守</text>
+    <text class="tiny" x="184" y="391">未开始</text>
+
+    <rect class="important" x="25" y="414" width="250" height="48"/>
+    <path d="M47 426 L52 438 L65 440 L55 448 L58 461 L47 454 L36 461 L39 448 L29 440 L42 438 Z" fill="#222"/>
+    <text class="label" x="72" y="439">7 拱极·守望</text>
+    <text class="tiny" x="184" y="439">重要开放</text>
+    <text class="tiny" x="72" y="456">投石镇江 / 强提示</text>
+
+    <rect class="locked" x="25" y="472" width="250" height="36"/>
+    <text class="label" x="42" y="495">8 湘君·鼓瑟</text>
+    <text class="tiny" x="184" y="495">未开始</text>
+  </g>
+
+  <!-- open node detail -->
+  <g transform="translate(795 245)">
+    <rect class="phone" x="0" y="0" width="250" height="470"/>
+    <text class="phone-title" x="28" y="43">开放节点详情</text>
+    <text class="tiny" x="28" y="68">普通开放节点</text>
+
+    <rect class="box" x="25" y="92" width="200" height="68"/>
+    <text class="label" x="45" y="121">沁园·挥毫</text>
+    <text class="tiny" x="45" y="141">开放中 · 可前往</text>
+
+    <rect class="box2" x="25" y="180" width="200" height="72"/>
+    <text class="label" x="45" y="207">节点预告</text>
+    <text class="tiny" x="45" y="228">靠近后通过听声辨位</text>
+    <text class="tiny" x="45" y="244">揭示任务细节</text>
+
+    <rect class="map" x="25" y="272" width="200" height="92"/>
+    <circle cx="70" cy="330" r="7" fill="#222"/>
+    <circle cx="152" cy="310" r="30" fill="none" stroke="#333" stroke-width="2" stroke-dasharray="6 5"/>
+    <text class="tiny" x="44" y="352">范围只显示大致方向</text>
+
+    <rect class="btn" x="35" y="386" width="180" height="36"/>
+    <text class="btn-text" x="74" y="409">循声前往</text>
+    <rect class="btn2" x="35" y="430" width="180" height="28"/>
+    <text class="btn-text2" x="82" y="449">返回总览</text>
+  </g>
+
+  <!-- locked prompt -->
+  <g transform="translate(1115 245)">
+    <rect class="phone" x="0" y="0" width="250" height="470"/>
+    <text class="phone-title" x="28" y="43">未开始提示</text>
+    <text class="tiny" x="28" y="68">点击未开放节点</text>
+
+    <rect class="map" x="25" y="92" width="200" height="190"/>
+    <circle cx="78" cy="236" r="7" fill="#222"/>
+    <circle cx="156" cy="155" r="34" fill="none" stroke="#777" stroke-width="2" stroke-dasharray="5 5"/>
+
+    <rect class="modal" x="38" y="148" width="174" height="120"/>
+    <text class="label" x="62" y="181">节点未开始</text>
+    <text class="tiny" x="62" y="206">该路线将在后续开放</text>
+    <text class="tiny" x="62" y="225">请先完成已开放节点</text>
+    <rect class="btn2" x="74" y="236" width="100" height="26"/>
+    <text class="btn-text2" x="100" y="254">知道了</text>
+
+    <rect class="box2" x="25" y="306" width="200" height="70"/>
+    <text class="label" x="45" y="333">可显示内容</text>
+    <text class="tiny" x="45" y="354">节点名 / 文化预告</text>
+    <text class="tiny" x="45" y="370">不显示任务细节</text>
+  </g>
+
+  <!-- important prompt -->
+  <g transform="translate(1435 245)">
+    <rect class="phone" x="0" y="0" width="250" height="470"/>
+    <text class="phone-title" x="28" y="43">重要节点提示</text>
+    <text class="tiny" x="28" y="68">特殊图标 + 强提示</text>
+
+    <rect class="box" x="25" y="92" width="200" height="70"/>
+    <path d="M52 109 L57 121 L70 123 L60 132 L63 145 L52 138 L41 145 L44 132 L34 123 L47 121 Z" fill="#222"/>
+    <text class="label" x="82" y="121">投石镇江</text>
+    <text class="tiny" x="82" y="143">重要节点 · 已开放</text>
+
+    <rect class="map" x="25" y="182" width="200" height="100"/>
+    <circle cx="84" cy="240" r="7" fill="#222"/>
+    <circle cx="152" cy="226" r="36" fill="rgba(34,34,34,0.08)" stroke="#222" stroke-width="3"/>
+    <text class="tiny" x="68" y="269">重要范围高亮</text>
+
+    <rect class="box2" x="25" y="304" width="200" height="62"/>
+    <text class="label" x="45" y="330">特殊提示</text>
+    <text class="tiny" x="45" y="351">靠近后出现剧情过渡</text>
+
+    <rect class="btn" x="35" y="386" width="180" height="36"/>
+    <text class="btn-text" x="70" y="409">进入重要节点</text>
+    <rect class="btn2" x="35" y="430" width="180" height="28"/>
+    <text class="btn-text2" x="74" y="449">先继续聆音</text>
+  </g>
+
+  <path class="arrow" d="M335 480 L415 480"/>
+  <path class="arrow" d="M715 400 L795 400"/>
+  <path class="arrow-soft" d="M715 484 L1115 484"/>
+  <path class="arrow" d="M715 560 C970 700, 1200 700, 1435 560"/>
+  <text class="flow" x="760" y="376">点开放普通节点</text>
+  <text class="flow" x="972" y="463">点未开放节点</text>
+  <text class="flow" x="1165" y="670">点重要开放节点</text>
+
+  <rect class="section" x="50" y="855" width="1800" height="365"/>
+  <text class="subtitle" x="82" y="895">八节点状态规则与图标说明</text>
+
+  <g transform="translate(95 940)">
+    <rect class="callout" x="0" y="0" width="500" height="210"/>
+    <text class="callout-title" x="28" y="42">现阶段开放的 3 个节点</text>
+    <text class="small" x="28" y="78">1. 1925·觉醒：身份确认、入戏起点。</text>
+    <text class="small" x="28" y="108">2. 沁园·挥毫：诗词朗诵、AR 临摹。</text>
+    <text class="small" x="28" y="138">7. 拱极·守望：重要节点，承接投石镇江。</text>
+    <text class="tiny" x="28" y="176">说明：这是 MVP/现阶段开放状态，不等于完整八关路线已经全部解锁。</text>
+  </g>
+
+  <g transform="translate(665 940)">
+    <rect class="callout" x="0" y="0" width="500" height="210"/>
+    <text class="callout-title" x="28" y="42">未开始节点显示规则</text>
+    <text class="small" x="28" y="78">未开放节点可以展示名称、序号和文化预告。</text>
+    <text class="small" x="28" y="108">不提前展示任务目标、奖励细节和玩法步骤。</text>
+    <text class="small" x="28" y="138">点击后只弹“未开始 / 后续开放 / 请先完成开放节点”。</text>
+    <text class="tiny" x="28" y="176">这样保留八关完整感，同时不误导玩家以为全部都能玩。</text>
+  </g>
+
+  <g transform="translate(1235 940)">
+    <rect class="callout" x="0" y="0" width="500" height="210"/>
+    <text class="callout-title" x="28" y="42">重要节点特殊图标</text>
+    <text class="small" x="28" y="78">重要节点使用星形/徽记图标，不用普通圆点。</text>
+    <text class="small" x="28" y="108">靠近后出现更强剧情过渡和特殊提示。</text>
+    <text class="small" x="28" y="138">重要节点可进入独立小游戏，如投石镇江。</text>
+    <text class="tiny" x="28" y="176">普通节点只做轻弹窗提醒，可跳过或稍后再来。</text>
+  </g>
+
+  <rect class="callout" x="70" y="1260" width="1760" height="48"/>
+  <text class="callout-title" x="100" y="1291">低保真结论：八节点总览负责建立完整路线感；听声辨位负责靠近和揭示；重要/普通/未开始三种状态必须在图标、提示强度和可操作性上区分。</text>
+</svg>

@@ -1,0 +1,11 @@
+<svg width="1280" height="720" viewBox="0 0 1280 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="720" rx="28" fill="#0C1318"/>
+  <rect x="24" y="24" width="1232" height="672" rx="20" stroke="#D7C39A" stroke-opacity="0.3" stroke-width="2" stroke-dasharray="14 14"/>
+  <ellipse cx="884" cy="366" rx="226" ry="254" fill="#D7C39A" fill-opacity="0.12"/>
+  <path d="M0 552C178 494 298 470 472 470C646 470 836 512 1280 640V720H0V552Z" fill="#D7C39A" fill-opacity="0.08"/>
+  <path d="M150 204H554" stroke="#D7C39A" stroke-opacity="0.22" stroke-width="18" stroke-linecap="round"/>
+  <path d="M150 262H508" stroke="#D7C39A" stroke-opacity="0.14" stroke-width="12" stroke-linecap="round"/>
+  <path d="M150 310H460" stroke="#D7C39A" stroke-opacity="0.14" stroke-width="12" stroke-linecap="round"/>
+  <text x="150" y="394" fill="#F3EBDD" font-family="serif" font-size="54" letter-spacing="6">DAYU CG COVER</text>
+  <text x="150" y="452" fill="#C9C0B1" font-family="sans-serif" font-size="24">15s intro cutscene placeholder</text>
+</svg>
