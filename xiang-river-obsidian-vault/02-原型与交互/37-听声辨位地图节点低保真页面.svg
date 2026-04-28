@@ -1,0 +1,228 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="1300" viewBox="0 0 1900 1300" role="img" aria-labelledby="title desc">
+  <title id="title">听声辨位地图节点低保真页面</title>
+  <desc id="desc">展示点击开始游戏后主界面、地图、听声辨位、AR辅助、节点任务和奖励页面的低保真结构。</desc>
+  <defs>
+    <style>
+      .bg { fill: #f5f1e8; }
+      .title { font: 700 46px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .subtitle { font: 400 22px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #555; }
+      .section { fill: rgba(255,255,255,0.58); stroke: #d2c5b2; stroke-width: 2; rx: 26; ry: 26; }
+      .phone { fill: #fffdfa; stroke: #222; stroke-width: 4; rx: 34; ry: 34; }
+      .phone-title { font: 700 21px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .label { font: 700 15px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .small { font: 400 13px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #555; }
+      .tiny { font: 400 12px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #666; }
+      .box { fill: #f8f8f8; stroke: #333; stroke-width: 2; rx: 9; ry: 9; }
+      .box2 { fill: #ffffff; stroke: #777; stroke-width: 1.6; rx: 9; ry: 9; }
+      .map { fill: #e9eee8; stroke: #333; stroke-width: 2; rx: 12; ry: 12; }
+      .btn { fill: #222; stroke: #222; stroke-width: 2; rx: 12; ry: 12; }
+      .btn2 { fill: #fff; stroke: #222; stroke-width: 2; rx: 12; ry: 12; }
+      .btn-text { font: 700 14px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #fff; }
+      .btn-text2 { font: 700 14px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .nav { fill: #f1f1f1; stroke: #333; stroke-width: 2; rx: 15; ry: 15; }
+      .line { stroke: #333; stroke-width: 2; fill: none; }
+      .dash { stroke: #555; stroke-width: 2; fill: none; stroke-dasharray: 7 7; }
+      .arrow { stroke: #222; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .arrow-soft { stroke: #666; stroke-width: 2.5; fill: none; stroke-dasharray: 8 8; marker-end: url(#arrowSoft); }
+      .flow { font: 700 14px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .callout { fill: #fffdf8; stroke: #d2c2aa; stroke-width: 1.8; rx: 15; ry: 15; }
+      .callout-title { font: 700 18px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #222; }
+      .muted { fill: #eee; stroke: #444; stroke-width: 1.5; }
+      .range { fill: none; stroke: #333; stroke-width: 2; stroke-dasharray: 6 5; }
+      .active-range { fill: rgba(34,34,34,0.08); stroke: #222; stroke-width: 3; }
+    </style>
+    <marker id="arrow" markerWidth="13" markerHeight="13" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#222"/>
+    </marker>
+    <marker id="arrowSoft" markerWidth="13" markerHeight="13" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#666"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1900" height="1300"/>
+  <text class="title" x="70" y="76">听声辨位地图节点低保真页面</text>
+  <text class="subtitle" x="72" y="116">点击“开始游戏”后：先看位置与节点，再用听声辨位分流，AR 只做辅助校准</text>
+
+  <rect class="section" x="50" y="155" width="1800" height="590"/>
+  <text class="subtitle" x="82" y="195">用户主流程页面</text>
+
+  <!-- 1 Main hub -->
+  <g transform="translate(85 235)">
+    <rect class="phone" x="0" y="0" width="250" height="430"/>
+    <text class="phone-title" x="28" y="43">主界面</text>
+    <circle class="muted" cx="45" cy="76" r="18"/>
+    <text class="label" x="72" y="75">湘江旅人 Lv.1</text>
+    <text class="tiny" x="72" y="96">定位：橘子洲入口附近</text>
+
+    <rect class="box" x="25" y="120" width="200" height="88"/>
+    <text class="label" x="45" y="150">推荐节点</text>
+    <text class="small" x="45" y="174">洲头渡口 · 约 80m</text>
+    <text class="tiny" x="45" y="194">进入范围后可完成任务</text>
+
+    <rect class="map" x="25" y="225" width="200" height="82"/>
+    <circle class="active-range" cx="82" cy="268" r="24"/>
+    <circle cx="82" cy="268" r="6" fill="#222"/>
+    <circle class="range" cx="154" cy="258" r="20"/>
+    <circle cx="154" cy="258" r="5" fill="#fff" stroke="#222" stroke-width="2"/>
+    <text class="tiny" x="42" y="296">地图预览：当前位置 + 节点范围</text>
+
+    <rect class="btn" x="35" y="324" width="180" height="38"/>
+    <text class="btn-text" x="75" y="348">开始听声辨位</text>
+    <rect class="btn2" x="35" y="374" width="82" height="30"/>
+    <text class="btn-text2" x="58" y="394">地图</text>
+    <rect class="btn2" x="133" y="374" width="82" height="30"/>
+    <text class="btn-text2" x="156" y="394">任务</text>
+  </g>
+
+  <!-- 2 Map -->
+  <g transform="translate(405 235)">
+    <rect class="phone" x="0" y="0" width="250" height="430"/>
+    <text class="phone-title" x="28" y="43">地图页</text>
+    <text class="tiny" x="28" y="67">显示当前位置、节点和范围</text>
+
+    <rect class="map" x="25" y="88" width="200" height="205"/>
+    <path class="dash" d="M48 246 C90 190, 128 210, 190 132"/>
+    <circle class="active-range" cx="72" cy="230" r="31"/>
+    <circle cx="72" cy="230" r="7" fill="#222"/>
+    <text class="tiny" x="42" y="278">你的位置</text>
+    <circle class="range" cx="160" cy="132" r="36"/>
+    <circle cx="160" cy="132" r="7" fill="#fff" stroke="#222" stroke-width="2"/>
+    <text class="tiny" x="132" y="104">洲头渡口</text>
+    <circle class="range" cx="90" cy="130" r="28"/>
+    <circle cx="90" cy="130" r="6" fill="#fff" stroke="#222" stroke-width="2"/>
+    <text class="tiny" x="54" y="111">远钟台</text>
+
+    <rect class="box2" x="25" y="312" width="200" height="42"/>
+    <text class="small" x="42" y="338">推荐：洲头渡口 · 分流人数少</text>
+    <rect class="btn" x="35" y="369" width="180" height="36"/>
+    <text class="btn-text" x="76" y="392">循声前往</text>
+  </g>
+
+  <!-- 3 Sound positioning -->
+  <g transform="translate(725 235)">
+    <rect class="phone" x="0" y="0" width="250" height="430"/>
+    <text class="phone-title" x="28" y="43">听声辨位</text>
+    <text class="tiny" x="28" y="67">核心分流机制</text>
+
+    <rect class="box" x="25" y="88" width="200" height="58"/>
+    <text class="label" x="45" y="119">目标：洲头渡口</text>
+    <text class="tiny" x="45" y="138">距离约 80m · 未进入范围</text>
+
+    <circle cx="125" cy="228" r="76" fill="#f1f1f1" stroke="#222" stroke-width="3"/>
+    <line class="dash" x1="125" y1="152" x2="125" y2="304"/>
+    <line class="dash" x1="49" y1="228" x2="201" y2="228"/>
+    <path d="M125 228 L175 182" stroke="#222" stroke-width="6" stroke-linecap="round"/>
+    <text class="label" x="88" y="332">声音偏右前方</text>
+    <text class="tiny" x="72" y="354">根据声强和方向移动</text>
+
+    <rect class="btn2" x="35" y="376" width="180" height="32"/>
+    <text class="btn-text2" x="74" y="397">AR 辅助校准</text>
+  </g>
+
+  <!-- 4 AR assist -->
+  <g transform="translate(1045 235)">
+    <rect class="phone" x="0" y="0" width="250" height="430"/>
+    <text class="phone-title" x="28" y="43">AR 辅助校准</text>
+    <text class="tiny" x="28" y="67">不是主玩法，只辅助听声辨位</text>
+
+    <rect class="map" x="25" y="88" width="200" height="246"/>
+    <rect class="box2" x="42" y="105" width="166" height="34"/>
+    <text class="tiny" x="62" y="127">听声辨位辅助层</text>
+    <circle cx="125" cy="214" r="58" fill="none" stroke="#222" stroke-width="3"/>
+    <line class="dash" x1="125" y1="150" x2="125" y2="278"/>
+    <line class="dash" x1="61" y1="214" x2="189" y2="214"/>
+    <path d="M125 214 C152 202, 168 184, 181 160" stroke="#222" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <text class="tiny" x="70" y="309">视觉方向与声音方向一致</text>
+
+    <rect class="btn" x="35" y="352" width="180" height="36"/>
+    <text class="btn-text" x="75" y="375">回到听声辨位</text>
+  </g>
+
+  <!-- 5 Node in range task -->
+  <g transform="translate(1365 235)">
+    <rect class="phone" x="0" y="0" width="250" height="430"/>
+    <text class="phone-title" x="28" y="43">节点任务</text>
+    <text class="tiny" x="28" y="67">进入范围后解锁</text>
+
+    <rect class="box" x="25" y="88" width="200" height="64"/>
+    <text class="label" x="45" y="118">洲头渡口</text>
+    <text class="tiny" x="45" y="137">已进入任务范围</text>
+
+    <rect class="box2" x="25" y="172" width="200" height="42"/>
+    <text class="small" x="48" y="198">拍摄：老码头</text>
+    <rect class="box2" x="25" y="225" width="200" height="42"/>
+    <text class="small" x="48" y="251">拍摄：水纹</text>
+    <rect class="box2" x="25" y="278" width="200" height="42"/>
+    <text class="small" x="48" y="304">拍摄：树影</text>
+
+    <rect class="btn" x="35" y="346" width="180" height="36"/>
+    <text class="btn-text" x="72" y="369">完成节点任务</text>
+    <rect class="btn2" x="35" y="390" width="180" height="28"/>
+    <text class="btn-text2" x="86" y="409">稍后再做</text>
+  </g>
+
+  <path class="arrow" d="M335 450 L405 450"/>
+  <path class="arrow" d="M655 450 L725 450"/>
+  <path class="arrow" d="M975 450 L1045 450"/>
+  <path class="arrow" d="M1295 450 L1365 450"/>
+  <text class="flow" x="1012" y="218">AR 只从听声辨位中进入</text>
+
+  <rect class="section" x="50" y="790" width="1800" height="400"/>
+  <text class="subtitle" x="82" y="830">完成、返回与开发者配置关系</text>
+
+  <!-- 6 Reward -->
+  <g transform="translate(120 875)">
+    <rect class="phone" x="0" y="0" width="250" height="270"/>
+    <text class="phone-title" x="28" y="43">奖励页</text>
+    <rect class="box" x="25" y="72" width="200" height="102"/>
+    <text class="label" x="58" y="112">获得明信片</text>
+    <text class="small" x="55" y="140">洲头渡口回声</text>
+    <rect class="btn" x="35" y="194" width="84" height="34"/>
+    <text class="btn-text" x="61" y="216">分享</text>
+    <rect class="btn2" x="135" y="194" width="80" height="34"/>
+    <text class="btn-text2" x="158" y="216">地图</text>
+  </g>
+
+  <!-- 7 Developer config -->
+  <g transform="translate(470 875)">
+    <rect class="callout" x="0" y="0" width="445" height="210"/>
+    <text class="callout-title" x="28" y="42">开发者锚点配置</text>
+    <rect class="box2" x="28" y="65" width="180" height="42"/>
+    <text class="small" x="46" y="91">节点坐标 / 地图点</text>
+    <rect class="box2" x="235" y="65" width="180" height="42"/>
+    <text class="small" x="253" y="91">有效半径 / 范围</text>
+    <rect class="box2" x="28" y="122" width="180" height="42"/>
+    <text class="small" x="46" y="148">任务条件</text>
+    <rect class="box2" x="235" y="122" width="180" height="42"/>
+    <text class="small" x="253" y="148">奖励内容</text>
+    <text class="tiny" x="28" y="190">这些数据决定地图显示、范围判断和任务解锁。</text>
+  </g>
+
+  <!-- 8 State rule -->
+  <g transform="translate(990 875)">
+    <rect class="callout" x="0" y="0" width="730" height="210"/>
+    <text class="callout-title" x="28" y="42">节点状态规则</text>
+    <rect class="box2" x="28" y="65" width="122" height="42"/>
+    <text class="small" x="48" y="91">未靠近</text>
+    <rect class="box2" x="168" y="65" width="122" height="42"/>
+    <text class="small" x="188" y="91">接近中</text>
+    <rect class="box2" x="308" y="65" width="122" height="42"/>
+    <text class="small" x="324" y="91">已进范围</text>
+    <rect class="box2" x="448" y="65" width="122" height="42"/>
+    <text class="small" x="470" y="91">已完成</text>
+    <rect class="box2" x="588" y="65" width="112" height="42"/>
+    <text class="small" x="614" y="91">已跳过</text>
+    <path class="arrow" d="M150 86 L168 86"/>
+    <path class="arrow" d="M290 86 L308 86"/>
+    <path class="arrow" d="M430 86 L448 86"/>
+    <path class="arrow-soft" d="M570 86 L588 86"/>
+    <text class="small" x="28" y="142">听声辨位主要服务“未靠近 → 接近中 → 已进范围”。</text>
+    <text class="small" x="28" y="172">AR 辅助只在“接近中”阶段帮助用户校准方向。</text>
+  </g>
+
+  <path class="arrow" d="M1490 665 C1420 780, 350 780, 245 875"/>
+  <text class="flow" x="805" y="774">任务完成后获得奖励，可回地图继续分流</text>
+
+  <rect class="callout" x="70" y="1220" width="1740" height="46"/>
+  <text class="callout-title" x="100" y="1250">低保真结论：主界面不直接强调 AR，而是强调“当前位置 + 节点范围 + 开始听声辨位”；AR 只作为听声辨位中的辅助校准入口。</text>
+</svg>

@@ -1,0 +1,143 @@
+{
+  "name": "mode-select-exact-split",
+  "created": "2026-04-28",
+  "sourceImage": "/home/mode-select/exact-split/source/mode-select-source.png",
+  "fullReference": "/home/mode-select/exact-split/source/mode-select-full-reference.png",
+  "image2Reference": "/home/mode-select/exact-split/source/image2-split-reference-generated.png",
+  "preview": "/home/mode-select/exact-split/mode-select-exact-preview.jpg",
+  "note": "Final assets are pixel-exact source-derived PNG crops. The image2.0 output is kept only as a generated split reference because generated text/edges can drift from the original.",
+  "assets": {
+    "background-full": {
+      "path": "/home/mode-select/exact-split/assets/background-full.png",
+      "source": "/home/mode-select/page-background-reference.png",
+      "size": {
+        "width": 941,
+        "height": 1672
+      },
+      "transparent": false,
+      "pixelSource": "direct crop from mode-select-source/full-reference, no redraw",
+      "usage": "full original page reference/background layer"
+    },
+    "panel-with-content": {
+      "path": "/home/mode-select/exact-split/assets/panel-with-content.png",
+      "source": "/home/mode-select/panel-with-content.png",
+      "size": {
+        "width": 798,
+        "height": 1118
+      },
+      "transparent": true,
+      "pixelSource": "direct crop from mode-select-source/full-reference, no redraw",
+      "usage": "central ornate modal panel with all current content"
+    },
+    "title-select-journey": {
+      "path": "/home/mode-select/exact-split/assets/title-select-journey.png",
+      "source": "/home/mode-select/title-select-journey.png",
+      "size": {
+        "width": 576,
+        "height": 150
+      },
+      "transparent": true,
+      "pixelSource": "direct crop from mode-select-source/full-reference, no redraw",
+      "usage": "title block: ??????"
+    },
+    "button-single-active": {
+      "path": "/home/mode-select/exact-split/assets/button-single-active.png",
+      "source": "/home/mode-select/button-single-active.png",
+      "size": {
+        "width": 635,
+        "height": 200
+      },
+      "transparent": true,
+      "pixelSource": "direct crop from mode-select-source/full-reference, no redraw",
+      "usage": "active red ???? button"
+    },
+    "button-team-idle": {
+      "path": "/home/mode-select/exact-split/assets/button-team-idle.png",
+      "source": "/home/mode-select/button-team-idle.png",
+      "size": {
+        "width": 635,
+        "height": 198
+      },
+      "transparent": true,
+      "pixelSource": "direct crop from mode-select-source/full-reference, no redraw",
+      "usage": "idle ???? button"
+    },
+    "hint-enter-main": {
+      "path": "/home/mode-select/exact-split/assets/hint-enter-main.png",
+      "source": "/home/mode-select/hint-enter-main.png",
+      "size": {
+        "width": 564,
+        "height": 74
+      },
+      "transparent": true,
+      "pixelSource": "direct crop from mode-select-source/full-reference, no redraw",
+      "usage": "helper text strip: ??????????"
+    },
+    "divider-long": {
+      "path": "/home/mode-select/exact-split/assets/divider-long.png",
+      "source": "/home/mode-select/divider-long.png",
+      "size": {
+        "width": 642,
+        "height": 43
+      },
+      "transparent": true,
+      "pixelSource": "direct crop from mode-select-source/full-reference, no redraw",
+      "usage": "thin divider line above back text"
+    },
+    "button-back-text": {
+      "path": "/home/mode-select/exact-split/assets/button-back-text.png",
+      "source": "/home/mode-select/button-back-text.png",
+      "size": {
+        "width": 290,
+        "height": 75
+      },
+      "transparent": true,
+      "pixelSource": "direct crop from mode-select-source/full-reference, no redraw",
+      "usage": "?? text with side ornaments"
+    },
+    "decor-maple-top-left": {
+      "path": "/home/mode-select/exact-split/assets/decor-maple-top-left.png",
+      "source": "/home/mode-select/decor-maple-top-left.png",
+      "size": {
+        "width": 360,
+        "height": 170
+      },
+      "transparent": false,
+      "pixelSource": "direct crop from mode-select-source/full-reference, no redraw",
+      "usage": "top-left maple branch decoration exact crop"
+    },
+    "decor-right-maple": {
+      "path": "/home/mode-select/exact-split/assets/decor-right-maple.png",
+      "source": "/home/mode-select/decor-right-maple.png",
+      "size": {
+        "width": 138,
+        "height": 104
+      },
+      "transparent": false,
+      "pixelSource": "direct crop from mode-select-source/full-reference, no redraw",
+      "usage": "right-side maple plus frame-edge crop"
+    },
+    "decor-bottom-mountains": {
+      "path": "/home/mode-select/exact-split/assets/decor-bottom-mountains.png",
+      "source": "/home/mode-select/decor-bottom-mountains.png",
+      "size": {
+        "width": 941,
+        "height": 342
+      },
+      "transparent": false,
+      "pixelSource": "direct crop from mode-select-source/full-reference, no redraw",
+      "usage": "bottom mountain wash crop"
+    },
+    "decor-bottom-right-leaves": {
+      "path": "/home/mode-select/exact-split/assets/decor-bottom-right-leaves.png",
+      "source": "/home/mode-select/decor-bottom-right-leaves.png",
+      "size": {
+        "width": 188,
+        "height": 235
+      },
+      "transparent": false,
+      "pixelSource": "direct crop from mode-select-source/full-reference, no redraw",
+      "usage": "bottom-right mountains and maple crop"
+    }
+  }
+}

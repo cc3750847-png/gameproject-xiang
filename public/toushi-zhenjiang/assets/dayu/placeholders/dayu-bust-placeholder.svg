@@ -1,0 +1,8 @@
+<svg width="800" height="1000" viewBox="0 0 800 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="1000" rx="36" fill="#10181D"/>
+  <rect x="28" y="28" width="744" height="944" rx="28" stroke="#D7C39A" stroke-opacity="0.3" stroke-width="2" stroke-dasharray="12 12"/>
+  <circle cx="400" cy="250" r="128" fill="#D7C39A" fill-opacity="0.16"/>
+  <path d="M188 770C188 632.48 299.48 521 437 521H363C500.52 521 612 632.48 612 770V854H188V770Z" fill="#D7C39A" fill-opacity="0.14"/>
+  <path d="M290 560C334 528 364 520 400 520C436 520 474 534 512 566" stroke="#D7C39A" stroke-opacity="0.22" stroke-width="22" stroke-linecap="round"/>
+  <text x="400" y="920" text-anchor="middle" fill="#F3EBDD" font-family="serif" font-size="44" letter-spacing="4">DAYU BUST</text>
+</svg>

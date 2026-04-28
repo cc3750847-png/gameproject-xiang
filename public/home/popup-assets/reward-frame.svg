@@ -1,0 +1,19 @@
+<svg width="720" height="720" viewBox="0 0 720 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="paper" x="0" y="0" width="1" height="1">
+      <feTurbulence type="fractalNoise" baseFrequency=".018 .034" numOctaves="3" seed="34"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 .78 0 0 0 0 .36 0 0 0 0 .18 0 0 0 .12 0"/>
+      <feBlend mode="multiply" in2="SourceGraphic"/>
+    </filter>
+    <filter id="shadow" x="54" y="54" width="612" height="612" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#7B351B" flood-opacity=".06"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <circle cx="360" cy="350" r="276" fill="#FFF4E9" filter="url(#paper)"/>
+    <circle cx="360" cy="350" r="276" stroke="#C65A2A" stroke-width="1.45" stroke-opacity=".78"/>
+    <circle cx="360" cy="350" r="246" stroke="#E7A35B" stroke-width=".85" stroke-opacity=".42"/>
+    <path d="M360 76l9 9-9 9-9-9 9-9ZM360 606l9 9-9 9-9-9 9-9ZM95 341l9 9-9 9-9-9 9-9ZM625 341l9 9-9 9-9-9 9-9Z" fill="#D86B32" fill-opacity=".68"/>
+    <path d="M220 536c45 20 92 30 141 30 49-.2 96-10.8 141-32" stroke="#D86B32" stroke-width=".9" stroke-linecap="round" stroke-opacity=".16"/>
+  </g>
+</svg>

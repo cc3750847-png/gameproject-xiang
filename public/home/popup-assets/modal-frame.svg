@@ -1,0 +1,24 @@
+<svg width="720" height="960" viewBox="0 0 720 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="paper" x="0" y="0" width="1" height="1">
+      <feTurbulence type="fractalNoise" baseFrequency=".018 .034" numOctaves="3" seed="31"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 .78 0 0 0 0 .36 0 0 0 0 .18 0 0 0 .12 0"/>
+      <feBlend mode="multiply" in2="SourceGraphic"/>
+    </filter>
+    <filter id="shadow" x="34" y="34" width="652" height="872" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#7B351B" flood-opacity=".06"/>
+    </filter>
+    <linearGradient id="fill" x1="360" y1="70" x2="360" y2="840" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF8EF"/>
+      <stop offset=".55" stop-color="#FCEDDD"/>
+      <stop offset="1" stop-color="#FFF7EE"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#shadow)">
+    <path d="M116 76h488c22.1 0 40 17.9 40 40v696c0 22.1-17.9 40-40 40H116c-22.1 0-40-17.9-40-40V116c0-22.1 17.9-40 40-40Z" fill="url(#fill)" filter="url(#paper)"/>
+    <path d="M116 76h488c22.1 0 40 17.9 40 40v696c0 22.1-17.9 40-40 40H116c-22.1 0-40-17.9-40-40V116c0-22.1 17.9-40 40-40Z" stroke="#C65A2A" stroke-width="1.45" stroke-opacity=".78"/>
+    <path d="M138 100h444c20.9 0 38 17.1 38 38v652c0 20.9-17.1 38-38 38H138c-20.9 0-38-17.1-38-38V138c0-20.9 17.1-38 38-38Z" stroke="#E7A35B" stroke-width=".85" stroke-opacity=".42"/>
+    <path d="M360 88l8 8-8 8-8-8 8-8ZM360 824l8 8-8 8-8-8 8-8Z" fill="#D86B32" fill-opacity=".72"/>
+    <path d="M150 148h420M150 780h420" stroke="#D86B32" stroke-width=".8" stroke-linecap="round" stroke-opacity=".16"/>
+  </g>
+</svg>
