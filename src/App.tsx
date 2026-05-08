@@ -5,7 +5,7 @@ import { deriveGuidanceState } from './features/guidance/deriveGuidanceState';
 import { deriveParticleField } from './features/guidance/deriveParticleField';
 import { HomeMenu, JourneyModeSelect } from './features/home/HomeMenu';
 import { ToushiZhenjiangFrame } from './features/toushi-zhenjiang/ToushiZhenjiangFrame';
-import { JOURNEY_ORDER, JOURNEY_SCREENS } from './features/journey/screens';
+import { JOURNEY_SCREENS } from './features/journey/screens';
 import { getNextScreen, type JourneyScreen } from './features/journey/getNextScreen';
 import { getHoldState } from './features/journey/getHoldState';
 import {
@@ -26,6 +26,7 @@ import {
   updatePlayerNickname,
 } from './features/player/playerState';
 import type { PlayerState } from './features/player/types';
+import { CampfireArLayer } from './features/campfire-ar/CampfireArLayer';
 
 const HOLD_TARGET_MS = 1500;
 const DEMO_TARGET_BEARING = 18;
@@ -34,6 +35,7 @@ const LOST_SIGNAL_AGE_MS = 2400;
 const MAX_AUDIO_GAIN = 0.08;
 const MAX_AVATAR_FILE_SIZE_BYTES = 2 * 1024 * 1024;
 const PLAYER_ID = 'player-demo';
+const DEFAULT_CAMPFIRE_SCENE = 'changsha-juzizhou';
 const AR_HUD_ASSETS = {
   corner: '/home/ar-hud/corner-brush.svg',
   scanLine: '/home/ar-hud/scan-line.svg',
@@ -52,8 +54,8 @@ const AR_HUD_ASSETS = {
   ],
 } as const;
 const DEMO_PLAYER_LOCATION: GeoPoint = {
-  latitude: 28.2282,
-  longitude: 112.9388,
+  latitude: 28.17317,
+  longitude: 112.9551,
 };
 const MAP_NODES: MapNode[] = [
   {
@@ -61,8 +63,8 @@ const MAP_NODES: MapNode[] = [
     title: '洲头渡口',
     summary: '在渡口确认江风、旧码头与水面入口线索。',
     coordinate: {
-      latitude: 28.22821,
-      longitude: 112.93882,
+      latitude: 28.17317,
+      longitude: 112.9551,
     },
     marker: {
       x: 24,
@@ -82,8 +84,8 @@ const MAP_NODES: MapNode[] = [
     title: '远钟台',
     summary: '沿江岸向北，寻找仍在水面回荡的钟声。',
     coordinate: {
-      latitude: 28.231,
-      longitude: 112.941,
+      latitude: 28.1804,
+      longitude: 112.9572,
     },
     marker: {
       x: 72,
@@ -103,8 +105,8 @@ const MAP_NODES: MapNode[] = [
     title: '树湾回声',
     summary: '在树影尽头标记一处安静的回声湾。',
     coordinate: {
-      latitude: 28.2269,
-      longitude: 112.9369,
+      latitude: 28.1868,
+      longitude: 112.9583,
     },
     marker: {
       x: 48,
@@ -348,14 +350,37 @@ function getScannerStatusCopy(
   return guidanceHint;
 }
 
+function getInitialArHudEnabled() {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const path = window.location.pathname.replace(/\/+$/, '');
+
+  return params.get('arhud') === '1' || path === '/ar' || path === '/arhud=1';
+}
+
+function getInitialCampfireScene() {
+  if (typeof window === 'undefined') {
+    return DEFAULT_CAMPFIRE_SCENE;
+  }
+
+  return new URLSearchParams(window.location.search).get('scene') || DEFAULT_CAMPFIRE_SCENE;
+}
+
 function App() {
-  const [screen, setScreen] = useState<JourneyScreen>('entry');
-  const [activeView, setActiveView] = useState<ExperienceView>('entry');
+  const [shouldBootArHud] = useState(getInitialArHudEnabled);
+  const campfireScene = useMemo(() => getInitialCampfireScene(), []);
+  const [screen, setScreen] = useState<JourneyScreen>(() => (shouldBootArHud ? 'guiding' : 'entry'));
+  const [activeView, setActiveView] = useState<ExperienceView>(() => (shouldBootArHud ? 'journey' : 'entry'));
   const [isToushiZhenjiangOpen, setIsToushiZhenjiangOpen] = useState(false);
   const [holdMs, setHoldMs] = useState(0);
   const [apiStatus, setApiStatus] = useState('API 检查中');
-  const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [cameraStatus, setCameraStatus] = useState<'idle' | 'loading' | 'ready' | 'error' | 'demo'>('idle');
+  const [isScannerOpen, setIsScannerOpen] = useState(shouldBootArHud);
+  const [cameraStatus, setCameraStatus] = useState<'idle' | 'loading' | 'ready' | 'error' | 'demo'>(
+    shouldBootArHud ? 'loading' : 'idle'
+  );
   const [demoDeviation, setDemoDeviation] = useState(DEFAULT_DEMO_DEVIATION);
   const [guidanceSignalActive, setGuidanceSignalActive] = useState(true);
   const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(false);
@@ -407,14 +432,13 @@ function App() {
   );
 
   const guidanceState = useMemo(() => {
-    const now = Date.now();
     const currentBearing = DEMO_TARGET_BEARING - demoDeviation;
 
     return deriveGuidanceState({
       currentBearing,
       targetBearing: DEMO_TARGET_BEARING,
-      lastUpdateAt: guidanceSignalActive ? now : now - LOST_SIGNAL_AGE_MS,
-      now,
+      lastUpdateAt: guidanceSignalActive ? 0 : -LOST_SIGNAL_AGE_MS,
+      now: 0,
     });
   }, [demoDeviation, guidanceSignalActive]);
 
@@ -595,7 +619,7 @@ function App() {
     }
 
     return config;
-  }, [activeView, achievementProgress, config, locationStatus, nodeTask, player.title, selectedNode]);
+  }, [activeView, achievementProgress, config, locationStatus, nodeTask, player.level, player.title, selectedNode]);
 
   function stopHold() {
     if (holdTimer.current !== null) {
@@ -825,29 +849,25 @@ function App() {
 
   useEffect(() => {
     let active = true;
-
-    if (!activeStageGameId) {
-      setStageGameConfig(null);
-      setStageGameStatus('idle');
-      setStageGameFeedback('');
-      setStageGameReward('');
-      return () => {
-        active = false;
-      };
-    }
-
-    loadStageGameConfig(screen).catch(() => {
-      if (active) {
-        setStageGameConfig(null);
-        setStageGameStatus('error');
-        setStageGameFeedback('节点接口暂不可用，当前仅保留本地演示。');
+    const loadTimer = window.setTimeout(() => {
+      if (!active) {
+        return;
       }
-    });
+
+      loadStageGameConfig(screen).catch(() => {
+        if (active) {
+          setStageGameConfig(null);
+          setStageGameStatus('error');
+          setStageGameFeedback('节点接口暂不可用，当前仅保留本地演示。');
+        }
+      });
+    }, 0);
 
     return () => {
       active = false;
+      window.clearTimeout(loadTimer);
     };
-  }, [activeStageGameId, screen]);
+  }, [screen]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -857,37 +877,31 @@ function App() {
     try {
       window.localStorage.setItem(PLAYER_STORAGE_KEY, serializePlayerState(player));
     } catch {
-      setTerminalFeedback('本地存档空间不足，请更换更小的头像图片。');
+      window.setTimeout(() => {
+        setTerminalFeedback('本地存档空间不足，请更换更小的头像图片。');
+      }, 0);
     }
   }, [player]);
 
   useEffect(() => {
     if (screen === 'finale' && activeView === 'journey') {
-      setPlayer((current) => applyAchievementEvent(current, { type: 'journey-completed' }));
+      const achievementTimer = window.setTimeout(() => {
+        setPlayer((current) => applyAchievementEvent(current, { type: 'journey-completed' }));
+      }, 0);
+
+      return () => {
+        window.clearTimeout(achievementTimer);
+      };
     }
   }, [activeView, screen]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('arhud') !== '1') {
-      return;
-    }
-
-    setScreen('guiding');
-    setActiveView('journey');
-    setDemoDeviation(DEFAULT_DEMO_DEVIATION);
-    setGuidanceSignalActive(true);
-    setCameraStatus('demo');
-    setIsDebugPanelOpen(true);
-    setIsScannerOpen(true);
-  }, []);
-
-  useEffect(() => {
     if (!isScannerOpen) {
+      return;
+    }
+
+    if (shouldBootArHud) {
+      stopScannerStream();
       return;
     }
 
@@ -929,7 +943,7 @@ function App() {
       disposed = true;
       stopScannerStream();
     };
-  }, [isScannerOpen]);
+  }, [isScannerOpen, shouldBootArHud]);
 
   useEffect(() => {
     const audioContext = audioContextRef.current;
@@ -1883,11 +1897,12 @@ function App() {
       ) : null}
 
       {isScannerOpen ? (
-        <section className="scanner-sheet" aria-label="AR 引导层">
+        <section className={`scanner-sheet${shouldBootArHud ? ' scanner-sheet--direct' : ''}`} aria-label="AR 引导层">
           <div
             className="scanner-stage"
             data-phase={guidanceState.phase}
             data-direction={guidanceState.direction}
+            data-webar-mode={shouldBootArHud ? 'direct' : 'embedded'}
           >
             <video ref={videoRef} className="scanner-video" autoPlay playsInline muted />
 
@@ -1967,6 +1982,19 @@ function App() {
                 <span className="corner bottom-right" style={{ '--corner-image': `url(${AR_HUD_ASSETS.corner})` } as CSSProperties} />
               </div>
             </div>
+
+            <CampfireArLayer
+              guidanceState={guidanceState}
+              onRuntimeStatusChange={(status) => {
+                if (!shouldBootArHud && cameraStatus === 'demo') {
+                  return;
+                }
+
+                setCameraStatus(status === 'ready' ? 'ready' : status === 'loading' ? 'loading' : 'error');
+              }}
+              playerId={PLAYER_ID}
+              scene={campfireScene}
+            />
 
             <button
               type="button"

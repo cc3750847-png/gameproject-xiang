@@ -1018,6 +1018,12 @@
   backdrop-filter: blur(12px);
 }
 
+.scanner-sheet--direct {
+  padding: 0;
+  background: #03070d;
+  backdrop-filter: none;
+}
+
 .icon-button {
   min-height: 42px;
   padding-inline: 14px;
@@ -1074,6 +1080,17 @@
   background: radial-gradient(circle at center, rgba(242, 209, 134, 0.2), transparent 40%);
 }
 
+.scanner-sheet--direct .scanner-stage {
+  border: 0;
+  border-radius: 0;
+  background: #03070d;
+}
+
+.scanner-stage[data-webar-mode='direct']::before,
+.scanner-stage[data-webar-mode='direct']::after {
+  display: none;
+}
+
 .scanner-topbar {
   position: relative;
   z-index: 3;
@@ -1081,6 +1098,16 @@
   justify-content: space-between;
   gap: 12px;
   padding: 12px;
+}
+
+.scanner-stage[data-webar-mode='direct'] .scanner-topbar {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 12;
+  justify-content: flex-end;
+  padding: max(12px, calc(env(safe-area-inset-top) + 10px)) max(12px, env(safe-area-inset-right)) 0
+    max(12px, env(safe-area-inset-left));
+  pointer-events: none;
 }
 
 .scanner-topstack {
@@ -1091,6 +1118,19 @@
 
 .scanner-topstack--right {
   justify-items: end;
+}
+
+.scanner-stage[data-webar-mode='direct'] .scanner-topstack:first-child,
+.scanner-stage[data-webar-mode='direct'] .scanner-metrics,
+.scanner-stage[data-webar-mode='direct'] .scanner-center,
+.scanner-stage[data-webar-mode='direct'] .debug-toggle,
+.scanner-stage[data-webar-mode='direct'] .guidance-demo-panel,
+.scanner-stage[data-webar-mode='direct'] .scanner-status {
+  display: none;
+}
+
+.scanner-stage[data-webar-mode='direct'] .scanner-topstack--right {
+  pointer-events: none;
 }
 
 .scanner-mode-chip,
@@ -1147,6 +1187,19 @@
   display: grid;
   place-items: center;
   font-size: 1rem;
+}
+
+.scanner-stage[data-webar-mode='direct'] .micro-close {
+  position: relative;
+  z-index: 13;
+  width: 52px;
+  height: 52px;
+  min-height: 52px;
+  box-sizing: border-box;
+  padding: 0;
+  pointer-events: auto;
+  background: rgba(5, 14, 26, 0.72);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
 }
 
 .scanner-metrics {
