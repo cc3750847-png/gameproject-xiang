@@ -3,6 +3,9 @@ dist/
 coverage/
 .npm-cache/
 *.tsbuildinfo
+.env
+.env.local
+.env.*.local
 
 .runtime/
 .superpowers/

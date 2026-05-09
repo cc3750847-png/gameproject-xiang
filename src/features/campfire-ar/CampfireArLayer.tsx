@@ -16,6 +16,15 @@ import type {
   WebGLRenderer,
 } from 'three';
 import type { GuidanceStateResult } from '../guidance/types';
+import {
+  deleteCloudCampfire,
+  fetchCloudCampfires,
+  isCampfireCloudConfigured,
+  saveCloudCampfire,
+  saveCloudComment,
+  subscribeCloudCampfires,
+} from './campfireStore';
+import type { CampfireComment, CampfireKind, CampfireNote } from './campfireTypes';
 import './campfireAr.scss';
 
 type ThreeModule = typeof import('three');
@@ -78,28 +87,6 @@ type XrWindow = Window & {
   XRExtras?: XrExtrasRuntime;
 };
 
-type CampfireKind = 'official' | 'user';
-
-type CampfireComment = {
-  id: string;
-  authorName: string;
-  body: string;
-  createdAt: string;
-};
-
-type CampfireNote = {
-  id: string;
-  kind: CampfireKind;
-  ownerId?: string;
-  title: string;
-  body: string;
-  x: number;
-  y: number;
-  z: number;
-  comments: CampfireComment[];
-  createdAt: string;
-};
-
 type CampfireObject = ReturnType<typeof createCampfireObject> & {
   id: string;
   kind: CampfireKind;
@@ -121,6 +108,7 @@ type HotspotScreenState = {
 };
 
 type RuntimeStatus = 'loading' | 'ready' | 'error';
+type SyncMode = 'cloud' | 'loading' | 'local';
 
 type CampfireArLayerProps = {
   guidanceState: GuidanceStateResult;
@@ -280,6 +268,17 @@ function readStoredCampfires(scene: string): CampfireNote[] {
   } catch {
     return [createOfficialCampfire()];
   }
+}
+
+function withOfficialCampfire(campfires: CampfireNote[]) {
+  const official = createOfficialCampfire(
+    campfires.find((campfire): campfire is CampfireNote => campfire?.id === OFFICIAL_CAMPFIRE_ID)
+  );
+  const userCampfires = campfires.filter(
+    (campfire) => campfire.kind === 'user' && campfire.id !== OFFICIAL_CAMPFIRE_ID
+  );
+
+  return [official, ...userCampfires];
 }
 
 function formatCommentTime(input: string) {
@@ -543,6 +542,7 @@ export function CampfireArLayer({
   const [placementReady, setPlacementReady] = useState(false);
   const [runtimeAttempt, setRuntimeAttempt] = useState(0);
   const [nativeFallbackActive, setNativeFallbackActive] = useState(false);
+  const [syncMode, setSyncMode] = useState<SyncMode>(() => (isCampfireCloudConfigured() ? 'loading' : 'local'));
   const [statusText, setStatusText] = useState('点击进入 AR 后启动相机。');
   const [runtimeError, setRuntimeError] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -570,15 +570,67 @@ export function CampfireArLayer({
   const canDeleteActiveCampfire =
     activeCampfire?.kind === 'user' && (!activeCampfire.ownerId || activeCampfire.ownerId === playerId);
   const hasStarted = runtimeAttempt > 0;
+  const syncLabel = syncMode === 'cloud' ? '多人同步' : syncMode === 'loading' ? '连接云端' : '本地 Demo';
 
   useEffect(() => {
     runtimeStatusRef.current = onRuntimeStatusChange;
   }, [onRuntimeStatusChange]);
 
   useEffect(() => {
+    let disposed = false;
+    let refreshTimer: number | null = null;
+    let unsubscribe: (() => void) | null = null;
+
+    const loadCloudCampfires = async () => {
+      try {
+        const cloudCampfires = await fetchCloudCampfires(scene);
+        if (disposed || !cloudCampfires) {
+          return;
+        }
+
+        setCampfires(withOfficialCampfire(cloudCampfires));
+        setSyncMode('cloud');
+      } catch {
+        if (!disposed) {
+          setSyncMode('local');
+          setStatusText('云端留言暂不可用，当前使用本机 Demo 数据。');
+        }
+      }
+    };
+
+    if (!isCampfireCloudConfigured()) {
+      return () => {
+        disposed = true;
+      };
+    }
+
+    void loadCloudCampfires();
+
+    unsubscribe = subscribeCloudCampfires(scene, () => {
+      if (refreshTimer !== null) {
+        window.clearTimeout(refreshTimer);
+      }
+
+      refreshTimer = window.setTimeout(() => {
+        void loadCloudCampfires();
+      }, 120);
+    });
+
+    return () => {
+      disposed = true;
+      if (refreshTimer !== null) {
+        window.clearTimeout(refreshTimer);
+      }
+      unsubscribe?.();
+    };
+  }, [scene]);
+
+  useEffect(() => {
     notesRef.current = campfires;
-    window.localStorage.setItem(getStorageKey(scene), JSON.stringify(campfires));
-  }, [campfires, scene]);
+    if (syncMode === 'local') {
+      window.localStorage.setItem(getStorageKey(scene), JSON.stringify(campfires));
+    }
+  }, [campfires, scene, syncMode]);
 
   useEffect(() => {
     const activeIds = new Set(campfires.map((campfire) => campfire.id));
@@ -808,6 +860,25 @@ export function CampfireArLayer({
     hotspotScreensRef.current.delete(campfireId);
   };
 
+  useEffect(() => {
+    const xrScene = xrSceneRef.current;
+    const THREE = (window as XrWindow).THREE;
+    if (!xrScene || !THREE) {
+      return;
+    }
+
+    const activeIds = new Set(campfires.map((campfire) => campfire.id));
+    campfireObjectsRef.current.forEach((_campfire, campfireId) => {
+      if (!activeIds.has(campfireId)) {
+        removeCampfireObject(campfireId);
+      }
+    });
+
+    campfires.forEach((campfire) => {
+      addCampfireObject(campfire, xrScene, THREE);
+    });
+  }, [campfires]);
+
   const deleteActiveCampfire = () => {
     if (!activeCampfire || activeCampfire.kind === 'official') {
       return;
@@ -820,6 +891,11 @@ export function CampfireArLayer({
 
     removeCampfireObject(activeCampfire.id);
     setCampfires((current) => current.filter((campfire) => campfire.id !== activeCampfire.id));
+    if (syncMode === 'cloud') {
+      void deleteCloudCampfire(activeCampfire.id).catch(() => {
+        setStatusText('本机已删除，云端删除失败，请稍后重试。');
+      });
+    }
     setActiveCampfireId(OFFICIAL_CAMPFIRE_ID);
     setCommentBody('');
     closeDrawer();
@@ -888,6 +964,11 @@ export function CampfireArLayer({
 
     addCampfireObject(nextCampfire, xrScene, THREE);
     setCampfires((current) => [...current, nextCampfire]);
+    if (syncMode === 'cloud') {
+      void saveCloudCampfire(scene, nextCampfire).catch(() => {
+        setStatusText('本机已放置，云端同步失败，请稍后重试。');
+      });
+    }
     setActiveCampfireId(nextCampfire.id);
     setDraftBody('');
     setDraftTitle('');
@@ -930,6 +1011,11 @@ export function CampfireArLayer({
           : campfire
       )
     );
+    if (syncMode === 'cloud') {
+      void saveCloudComment(scene, activeCampfire.id, nextComment).catch(() => {
+        setStatusText('本机已保存，云端评论同步失败，请稍后重试。');
+      });
+    }
     setCommentBody('');
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
@@ -1500,7 +1586,7 @@ export function CampfireArLayer({
       ))}
 
       <div className="campfire-ar-topline">
-        <span>{runtimeError ? 'WebAR 异常' : '留言篝火'}</span>
+        <span>{runtimeError ? 'WebAR 异常' : `留言篝火 · ${syncLabel}`}</span>
         <strong>{runtimeError ?? statusText}</strong>
       </div>
 
