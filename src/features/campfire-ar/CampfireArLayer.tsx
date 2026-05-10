@@ -235,8 +235,8 @@ function createOfficialCampfire(existing?: CampfireNote): CampfireNote {
   return {
     id: OFFICIAL_CAMPFIRE_ID,
     kind: 'official',
-    title: '橘子洲官方篝火',
-    body: '橘子洲测试使用。这里是湘江橘子洲场景的官方留言点。',
+    title: '橘子洲迎客篝火',
+    body: '欢迎初登橘子洲头的旅人。这里是湘江与城市相望的起点，愿你沿着洲头、江风与灯火，留下属于这次旅程的第一句话。',
     x: 0,
     y: 0,
     z: 0,
