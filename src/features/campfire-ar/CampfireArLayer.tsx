@@ -18,9 +18,11 @@ import type {
 import type { GuidanceStateResult } from '../guidance/types';
 import {
   deleteCloudCampfire,
+  deleteCloudCampfireLike,
   fetchCloudCampfires,
   isCampfireCloudConfigured,
   saveCloudCampfire,
+  saveCloudCampfireLike,
   saveCloudComment,
   subscribeCloudCampfires,
 } from './campfireStore';
@@ -109,6 +111,15 @@ type HotspotScreenState = {
 
 type RuntimeStatus = 'loading' | 'ready' | 'error';
 type SyncMode = 'cloud' | 'loading' | 'local';
+type VisitorProfile = {
+  id: string;
+  name: string;
+};
+
+type CommentThread = {
+  comment: CampfireComment;
+  replies: CampfireComment[];
+};
 
 type CampfireArLayerProps = {
   guidanceState: GuidanceStateResult;
@@ -126,6 +137,7 @@ const CAMPFIRE_HOTSPOT_MAX_SCALE = 0.72;
 const CAMPFIRE_GROUND_ANCHOR_PERCENT = 68;
 const RUNTIME_TIMEOUT_MS = 20000;
 const STORAGE_VERSION = 4;
+const VISITOR_STORAGE_KEY = 'xiang-campfire-visitor:v1';
 const OFFICIAL_CAMPFIRE_ID = 'official-origin-campfire';
 const CAMPFIRE_MODULE_NAME = 'xiang-campfire-scene';
 const PERMISSION_MODULE_NAME = 'xiang-campfire-orientation';
@@ -141,6 +153,38 @@ function createId(prefix: string) {
   }
 
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function createVisitorProfile(): VisitorProfile {
+  return {
+    id: createId('visitor'),
+    name: `游客 ${Math.floor(1000 + Math.random() * 9000)}`,
+  };
+}
+
+function readVisitorProfile(): VisitorProfile {
+  if (typeof window === 'undefined') {
+    return createVisitorProfile();
+  }
+
+  try {
+    const raw = window.localStorage.getItem(VISITOR_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<VisitorProfile>;
+      if (typeof parsed.id === 'string' && typeof parsed.name === 'string') {
+        return {
+          id: parsed.id,
+          name: parsed.name,
+        };
+      }
+    }
+
+    const profile = createVisitorProfile();
+    window.localStorage.setItem(VISITOR_STORAGE_KEY, JSON.stringify(profile));
+    return profile;
+  } catch {
+    return createVisitorProfile();
+  }
 }
 
 function getStorageKey(scene: string) {
@@ -197,6 +241,8 @@ function createOfficialCampfire(existing?: CampfireNote): CampfireNote {
     z: 0,
     comments: existing?.comments ?? [],
     createdAt: existing?.createdAt ?? 'official',
+    likedByVisitor: existing?.likedByVisitor ?? false,
+    likeCount: existing?.likeCount ?? 0,
   };
 }
 
@@ -240,6 +286,8 @@ function normalizeCampfire(value: unknown): CampfireNote | null {
     z: record.z,
     comments,
     createdAt: typeof record.createdAt === 'string' ? record.createdAt : new Date().toISOString(),
+    likedByVisitor: typeof record.likedByVisitor === 'boolean' ? record.likedByVisitor : false,
+    likeCount: typeof record.likeCount === 'number' ? record.likeCount : 0,
   };
 }
 
@@ -533,12 +581,14 @@ export function CampfireArLayer({
   scene,
 }: CampfireArLayerProps) {
   const [campfires, setCampfires] = useState<CampfireNote[]>(() => readStoredCampfires(scene));
+  const [visitorProfile] = useState(readVisitorProfile);
   const [activeCampfireId, setActiveCampfireId] = useState(OFFICIAL_CAMPFIRE_ID);
   const [draftBody, setDraftBody] = useState('');
   const [draftTitle, setDraftTitle] = useState('');
   const [drawerMode, setDrawerMode] = useState<DrawerMode>('view');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [commentBody, setCommentBody] = useState('');
+  const [replyTarget, setReplyTarget] = useState<CampfireComment | null>(null);
   const [placementReady, setPlacementReady] = useState(false);
   const [runtimeAttempt, setRuntimeAttempt] = useState(0);
   const [nativeFallbackActive, setNativeFallbackActive] = useState(false);
@@ -563,12 +613,36 @@ export function CampfireArLayer({
     () => campfires.find((campfire) => campfire.id === activeCampfireId) ?? campfires[0],
     [activeCampfireId, campfires]
   );
+  const activeCommentThreads = useMemo<CommentThread[]>(() => {
+    if (!activeCampfire) {
+      return [];
+    }
+
+    const repliesByParentId = new Map<string, CampfireComment[]>();
+    const rootComments: CampfireComment[] = [];
+
+    for (const comment of activeCampfire.comments) {
+      if (comment.parentCommentId) {
+        const replies = repliesByParentId.get(comment.parentCommentId) ?? [];
+        replies.push(comment);
+        repliesByParentId.set(comment.parentCommentId, replies);
+      } else {
+        rootComments.push(comment);
+      }
+    }
+
+    return rootComments.map((comment) => ({
+      comment,
+      replies: repliesByParentId.get(comment.id) ?? [],
+    }));
+  }, [activeCampfire]);
   const userCampfireCount = useMemo(
     () => campfires.filter((campfire) => campfire.kind === 'user').length,
     [campfires]
   );
   const canDeleteActiveCampfire =
-    activeCampfire?.kind === 'user' && (!activeCampfire.ownerId || activeCampfire.ownerId === playerId);
+    activeCampfire?.kind === 'user' &&
+    (!activeCampfire.ownerId || activeCampfire.ownerId === playerId || activeCampfire.ownerId === visitorProfile.id);
   const hasStarted = runtimeAttempt > 0;
   const syncLabel = syncMode === 'cloud' ? '多人同步' : syncMode === 'loading' ? '连接云端' : '本地 Demo';
 
@@ -583,7 +657,7 @@ export function CampfireArLayer({
 
     const loadCloudCampfires = async () => {
       try {
-        const cloudCampfires = await fetchCloudCampfires(scene);
+        const cloudCampfires = await fetchCloudCampfires(scene, visitorProfile.id);
         if (disposed || !cloudCampfires) {
           return;
         }
@@ -623,7 +697,7 @@ export function CampfireArLayer({
       }
       unsubscribe?.();
     };
-  }, [scene]);
+  }, [scene, visitorProfile.id]);
 
   useEffect(() => {
     notesRef.current = campfires;
@@ -817,6 +891,7 @@ export function CampfireArLayer({
   const openCampfire = (campfireId: string) => {
     setActiveCampfireId(campfireId);
     setDrawerMode('view');
+    setReplyTarget(null);
     setDrawerOpen(true);
   };
 
@@ -828,6 +903,7 @@ export function CampfireArLayer({
     }
 
     drawerDragRef.current = null;
+    setReplyTarget(null);
     setDrawerOpen(false);
   };
 
@@ -952,7 +1028,7 @@ export function CampfireArLayer({
     const nextCampfire: CampfireNote = {
       id: createId('campfire'),
       kind: 'user',
-      ownerId: playerId,
+      ownerId: visitorProfile.id,
       title,
       body,
       x: nextPosition.x,
@@ -960,6 +1036,8 @@ export function CampfireArLayer({
       z: nextPosition.z,
       comments: [],
       createdAt: new Date().toISOString(),
+      likedByVisitor: false,
+      likeCount: 0,
     };
 
     addCampfireObject(nextCampfire, xrScene, THREE);
@@ -988,6 +1066,35 @@ export function CampfireArLayer({
     notifyRuntimeStatus('loading');
   };
 
+  const toggleActiveCampfireLike = () => {
+    if (!activeCampfire) {
+      return;
+    }
+
+    const nextLiked = !activeCampfire.likedByVisitor;
+    setCampfires((current) =>
+      current.map((campfire) =>
+        campfire.id === activeCampfire.id
+          ? {
+              ...campfire,
+              likedByVisitor: nextLiked,
+              likeCount: Math.max(0, campfire.likeCount + (nextLiked ? 1 : -1)),
+            }
+          : campfire
+      )
+    );
+
+    if (syncMode === 'cloud') {
+      const syncLike = nextLiked
+        ? saveCloudCampfireLike(scene, activeCampfire.id, visitorProfile.id)
+        : deleteCloudCampfireLike(activeCampfire.id, visitorProfile.id);
+
+      void syncLike.catch(() => {
+        setStatusText('点赞同步失败，请稍后重试。');
+      });
+    }
+  };
+
   const saveComment = () => {
     const body = commentBody.trim();
     if (!body || !activeCampfire) {
@@ -996,9 +1103,11 @@ export function CampfireArLayer({
 
     const nextComment: CampfireComment = {
       id: createId('comment'),
-      authorName: playerId || 'player-demo',
+      authorId: visitorProfile.id,
+      authorName: visitorProfile.name,
       body,
       createdAt: new Date().toISOString(),
+      parentCommentId: replyTarget?.id,
     };
 
     setCampfires((current) =>
@@ -1017,6 +1126,7 @@ export function CampfireArLayer({
       });
     }
     setCommentBody('');
+    setReplyTarget(null);
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
@@ -1674,7 +1784,18 @@ export function CampfireArLayer({
             <div className="campfire-drawer-header">
               <div>
                 <p>{activeCampfire.kind === 'official' ? '官方蓝色篝火' : '玩家留言篝火'}</p>
-                <h2>{activeCampfire.title}</h2>
+                <div className="campfire-title-row">
+                  <h2>{activeCampfire.title}</h2>
+                  <button
+                    className="campfire-like-button"
+                    data-liked={activeCampfire.likedByVisitor}
+                    onClick={toggleActiveCampfireLike}
+                    type="button"
+                  >
+                    <span>{activeCampfire.likedByVisitor ? '已赞' : '点赞'}</span>
+                    <strong>{activeCampfire.likeCount}</strong>
+                  </button>
+                </div>
               </div>
               <div className="campfire-drawer-actions">
                 {canDeleteActiveCampfire ? (
@@ -1694,23 +1815,52 @@ export function CampfireArLayer({
               {activeCampfire.comments.length === 0 ? (
                 <p className="campfire-empty">还没有评论。</p>
               ) : (
-                activeCampfire.comments.map((comment) => (
+                activeCommentThreads.map(({ comment, replies }) => (
                   <article key={comment.id} className="campfire-comment">
-                    <div>
+                    <div className="campfire-comment-meta">
+                      <span className="campfire-comment-avatar" aria-hidden="true">
+                        游
+                      </span>
                       <strong>{comment.authorName}</strong>
                       <time>{formatCommentTime(comment.createdAt)}</time>
                     </div>
                     <p>{comment.body}</p>
+                    <button className="campfire-reply-button" type="button" onClick={() => setReplyTarget(comment)}>
+                      回复
+                    </button>
+
+                    {replies.length > 0 ? (
+                      <div className="campfire-replies">
+                        {replies.map((reply) => (
+                          <article key={reply.id} className="campfire-reply">
+                            <div>
+                              <strong>{reply.authorName}</strong>
+                              <span>回复 {comment.authorName}</span>
+                              <time>{formatCommentTime(reply.createdAt)}</time>
+                            </div>
+                            <p>{reply.body}</p>
+                          </article>
+                        ))}
+                      </div>
+                    ) : null}
                   </article>
                 ))
               )}
             </div>
 
             <form className="campfire-composer" onSubmit={submitComment}>
+              {replyTarget ? (
+                <div className="campfire-reply-target">
+                  <span>回复 {replyTarget.authorName}</span>
+                  <button type="button" onClick={() => setReplyTarget(null)}>
+                    取消
+                  </button>
+                </div>
+              ) : null}
               <textarea
                 maxLength={200}
                 onChange={(event) => setCommentBody(event.target.value)}
-                placeholder="写一句现场留言..."
+                placeholder={replyTarget ? `回复 ${replyTarget.authorName}...` : '写一句现场留言...'}
                 rows={3}
                 value={commentBody}
               />

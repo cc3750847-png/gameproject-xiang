@@ -630,6 +630,17 @@
   line-height: 1.2;
 }
 
+.campfire-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.campfire-title-row h2 {
+  min-width: 0;
+}
+
 .campfire-drawer-actions {
   display: flex;
   flex: 0 0 auto;
@@ -655,6 +666,28 @@
   color: #b24c30;
 }
 
+.campfire-drawer-header .campfire-like-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 11px;
+  border-color: rgba(211, 112, 58, 0.24);
+  background: rgba(255, 247, 235, 0.86);
+  color: #9b5b32;
+  font-size: 0.78rem;
+}
+
+.campfire-like-button[data-liked='true'] {
+  border-color: rgba(212, 94, 52, 0.34);
+  background: linear-gradient(135deg, rgba(238, 140, 74, 0.94), rgba(202, 86, 45, 0.94));
+  color: #fff8ef;
+}
+
+.campfire-like-button strong {
+  font-size: 0.88rem;
+}
+
 .campfire-body,
 .campfire-empty {
   margin: 0;
@@ -677,13 +710,30 @@
   background: rgba(255, 252, 247, 0.76);
 }
 
-.campfire-comment div {
+.campfire-comment-meta {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 5px;
   color: rgba(95, 58, 36, 0.64);
   font-size: 0.8rem;
+}
+
+.campfire-comment-avatar {
+  width: 22px;
+  height: 22px;
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f1b26d, #d76934);
+  color: #fff8ef;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.campfire-comment-meta time {
+  margin-left: auto;
 }
 
 .campfire-comment p {
@@ -691,9 +741,82 @@
   line-height: 1.5;
 }
 
+.campfire-reply-button {
+  appearance: none;
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #b46b3c;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.campfire-replies {
+  display: grid;
+  gap: 7px;
+  margin-top: 9px;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(246, 231, 212, 0.46);
+}
+
+.campfire-reply {
+  display: grid;
+  gap: 4px;
+}
+
+.campfire-reply div {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: rgba(95, 58, 36, 0.62);
+  font-size: 0.76rem;
+}
+
+.campfire-reply strong {
+  color: #774528;
+}
+
+.campfire-reply time {
+  margin-left: auto;
+}
+
+.campfire-reply p {
+  color: rgba(95, 58, 36, 0.84);
+  font-size: 0.9rem;
+}
+
 .campfire-composer {
   display: grid;
   gap: 8px;
+}
+
+.campfire-reply-target {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid rgba(190, 135, 91, 0.16);
+  border-radius: 12px;
+  background: rgba(255, 248, 239, 0.76);
+  color: #8c5635;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.campfire-reply-target button {
+  appearance: none;
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #b24c30;
+  font: inherit;
+  font-weight: 900;
 }
 
 .campfire-composer label {
@@ -745,6 +868,14 @@
 
 .campfire-composer button:disabled {
   opacity: 0.48;
+}
+
+.campfire-composer .campfire-reply-target button {
+  min-height: auto;
+  border-radius: 0;
+  background: transparent;
+  color: #b24c30;
+  letter-spacing: 0;
 }
 
 @keyframes campfireHotspotPulse {

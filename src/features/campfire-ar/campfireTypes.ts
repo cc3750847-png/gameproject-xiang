@@ -1,10 +1,12 @@
 export type CampfireKind = 'official' | 'user';
 
 export type CampfireComment = {
+  authorId?: string;
   id: string;
   authorName: string;
   body: string;
   createdAt: string;
+  parentCommentId?: string;
 };
 
 export type CampfireNote = {
@@ -18,5 +20,6 @@ export type CampfireNote = {
   z: number;
   comments: CampfireComment[];
   createdAt: string;
+  likedByVisitor: boolean;
+  likeCount: number;
 };
-

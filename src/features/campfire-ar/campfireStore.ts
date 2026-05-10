@@ -15,18 +15,31 @@ type CampfireNoteRow = {
 };
 
 type CampfireCommentRow = {
+  author_id: string | null;
   author_name: string;
   body: string;
   created_at: string;
   id: string;
   note_id: string;
+  parent_comment_id: string | null;
   scene: string;
+};
+
+type CampfireLikeRow = {
+  created_at: string;
+  note_id: string;
+  scene: string;
+  visitor_id: string;
 };
 
 let supabaseClient: SupabaseClient | null = null;
 
 function getSupabaseConfig() {
   const env = import.meta.env;
+  if (env.MODE === 'test') {
+    return null;
+  }
+
   const url = env.VITE_SUPABASE_URL;
   const anonKey = env.VITE_SUPABASE_ANON_KEY;
 
@@ -54,7 +67,12 @@ function getSupabase() {
   return supabaseClient;
 }
 
-function toCampfireNote(row: CampfireNoteRow, comments: CampfireComment[]): CampfireNote {
+function toCampfireNote(
+  row: CampfireNoteRow,
+  comments: CampfireComment[],
+  likeCount: number,
+  likedByVisitor: boolean
+): CampfireNote {
   return {
     id: row.id,
     kind: row.kind,
@@ -66,27 +84,32 @@ function toCampfireNote(row: CampfireNoteRow, comments: CampfireComment[]): Camp
     z: row.z,
     comments,
     createdAt: row.created_at,
+    likedByVisitor,
+    likeCount,
   };
 }
 
 function toCampfireComment(row: CampfireCommentRow): CampfireComment {
   return {
+    authorId: row.author_id ?? undefined,
     id: row.id,
     authorName: row.author_name,
     body: row.body,
     createdAt: row.created_at,
+    parentCommentId: row.parent_comment_id ?? undefined,
   };
 }
 
-export async function fetchCloudCampfires(scene: string) {
+export async function fetchCloudCampfires(scene: string, visitorId: string) {
   const supabase = getSupabase();
   if (!supabase) {
     return null;
   }
 
-  const [notesResult, commentsResult] = await Promise.all([
+  const [notesResult, commentsResult, likesResult] = await Promise.all([
     supabase.from('campfire_notes').select('*').eq('scene', scene).order('created_at', { ascending: true }),
     supabase.from('campfire_comments').select('*').eq('scene', scene).order('created_at', { ascending: true }),
+    supabase.from('campfire_note_likes').select('*').eq('scene', scene),
   ]);
 
   if (notesResult.error) {
@@ -97,9 +120,23 @@ export async function fetchCloudCampfires(scene: string) {
     throw commentsResult.error;
   }
 
+  if (likesResult.error) {
+    throw likesResult.error;
+  }
+
   const commentsByNote = new Map<string, CampfireComment[]>();
   const commentRows = (commentsResult.data ?? []) as CampfireCommentRow[];
   const noteRows = (notesResult.data ?? []) as CampfireNoteRow[];
+  const likeRows = (likesResult.data ?? []) as CampfireLikeRow[];
+  const likeCounts = new Map<string, number>();
+  const likedByCurrentVisitor = new Set<string>();
+
+  for (const row of likeRows) {
+    likeCounts.set(row.note_id, (likeCounts.get(row.note_id) ?? 0) + 1);
+    if (row.visitor_id === visitorId) {
+      likedByCurrentVisitor.add(row.note_id);
+    }
+  }
 
   for (const row of commentRows) {
     const comments = commentsByNote.get(row.note_id) ?? [];
@@ -107,7 +144,9 @@ export async function fetchCloudCampfires(scene: string) {
     commentsByNote.set(row.note_id, comments);
   }
 
-  return noteRows.map((row) => toCampfireNote(row, commentsByNote.get(row.id) ?? []));
+  return noteRows.map((row) =>
+    toCampfireNote(row, commentsByNote.get(row.id) ?? [], likeCounts.get(row.id) ?? 0, likedByCurrentVisitor.has(row.id))
+  );
 }
 
 export async function saveCloudCampfire(scene: string, note: CampfireNote) {
@@ -160,13 +199,56 @@ export async function saveCloudComment(scene: string, campfireId: string, commen
   }
 
   const { error } = await supabase.from('campfire_comments').insert({
+    author_id: comment.authorId ?? null,
     author_name: comment.authorName,
     body: comment.body,
     created_at: comment.createdAt,
     id: comment.id,
     note_id: campfireId,
+    parent_comment_id: comment.parentCommentId ?? null,
     scene,
   });
+
+  if (error) {
+    throw error;
+  }
+
+  return true;
+}
+
+export async function saveCloudCampfireLike(scene: string, campfireId: string, visitorId: string) {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return false;
+  }
+
+  const { error } = await supabase.from('campfire_note_likes').upsert(
+    {
+      note_id: campfireId,
+      scene,
+      visitor_id: visitorId,
+    },
+    { onConflict: 'note_id,visitor_id' }
+  );
+
+  if (error) {
+    throw error;
+  }
+
+  return true;
+}
+
+export async function deleteCloudCampfireLike(campfireId: string, visitorId: string) {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return false;
+  }
+
+  const { error } = await supabase
+    .from('campfire_note_likes')
+    .delete()
+    .eq('note_id', campfireId)
+    .eq('visitor_id', visitorId);
 
   if (error) {
     throw error;
@@ -191,6 +273,11 @@ export function subscribeCloudCampfires(scene: string, onRemoteChange: () => voi
     .on(
       'postgres_changes',
       { event: '*', filter: `scene=eq.${scene}`, schema: 'public', table: 'campfire_comments' },
+      onRemoteChange
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', filter: `scene=eq.${scene}`, schema: 'public', table: 'campfire_note_likes' },
       onRemoteChange
     )
     .subscribe();
