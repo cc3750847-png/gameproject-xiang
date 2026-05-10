@@ -216,6 +216,21 @@ export async function saveCloudComment(scene: string, campfireId: string, commen
   return true;
 }
 
+export async function deleteCloudComment(commentId: string, visitorId: string) {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return false;
+  }
+
+  const { error } = await supabase.from('campfire_comments').delete().eq('id', commentId).eq('author_id', visitorId);
+
+  if (error) {
+    throw error;
+  }
+
+  return true;
+}
+
 export async function saveCloudCampfireLike(scene: string, campfireId: string, visitorId: string) {
   const supabase = getSupabase();
   if (!supabase) {

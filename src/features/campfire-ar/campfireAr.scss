@@ -741,9 +741,15 @@
   line-height: 1.5;
 }
 
-.campfire-reply-button {
-  appearance: none;
+.campfire-comment-actions {
+  display: flex;
+  gap: 12px;
   margin-top: 8px;
+}
+
+.campfire-reply-button,
+.campfire-comment-delete {
+  appearance: none;
   padding: 0;
   border: 0;
   background: transparent;
@@ -751,6 +757,10 @@
   font: inherit;
   font-size: 0.78rem;
   font-weight: 900;
+}
+
+.campfire-comment-delete {
+  color: #b24c30;
 }
 
 .campfire-replies {
@@ -787,6 +797,11 @@
 .campfire-reply p {
   color: rgba(95, 58, 36, 0.84);
   font-size: 0.9rem;
+}
+
+.campfire-reply .campfire-comment-delete {
+  justify-self: start;
+  font-size: 0.76rem;
 }
 
 .campfire-composer {

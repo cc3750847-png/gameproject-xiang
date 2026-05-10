@@ -19,6 +19,7 @@ import type { GuidanceStateResult } from '../guidance/types';
 import {
   deleteCloudCampfire,
   deleteCloudCampfireLike,
+  deleteCloudComment,
   fetchCloudCampfires,
   isCampfireCloudConfigured,
   saveCloudCampfire,
@@ -1095,6 +1096,40 @@ export function CampfireArLayer({
     }
   };
 
+  const isOwnComment = (comment: CampfireComment) =>
+    comment.authorId ? comment.authorId === visitorProfile.id : comment.authorName === visitorProfile.name;
+
+  const deleteComment = (comment: CampfireComment) => {
+    if (!activeCampfire || !isOwnComment(comment)) {
+      return;
+    }
+
+    setCampfires((current) =>
+      current.map((campfire) =>
+        campfire.id === activeCampfire.id
+          ? {
+              ...campfire,
+              comments: campfire.comments.filter(
+                (candidate) => candidate.id !== comment.id && candidate.parentCommentId !== comment.id
+              ),
+            }
+          : campfire
+      )
+    );
+
+    if (replyTarget?.id === comment.id || replyTarget?.parentCommentId === comment.id) {
+      setReplyTarget(null);
+    }
+
+    if (syncMode === 'cloud') {
+      void deleteCloudComment(comment.id, visitorProfile.id).catch(() => {
+        setStatusText('本机已删除，云端评论删除失败，请稍后重试。');
+      });
+    }
+
+    setStatusText(comment.parentCommentId ? '回复已删除。' : '评论已删除。');
+  };
+
   const saveComment = () => {
     const body = commentBody.trim();
     if (!body || !activeCampfire) {
@@ -1824,9 +1859,16 @@ export function CampfireArLayer({
                       <time>{formatCommentTime(comment.createdAt)}</time>
                     </div>
                     <p>{comment.body}</p>
-                    <button className="campfire-reply-button" type="button" onClick={() => setReplyTarget(comment)}>
-                      回复
-                    </button>
+                    <div className="campfire-comment-actions">
+                      <button className="campfire-reply-button" type="button" onClick={() => setReplyTarget(comment)}>
+                        回复
+                      </button>
+                      {isOwnComment(comment) ? (
+                        <button className="campfire-comment-delete" type="button" onClick={() => deleteComment(comment)}>
+                          删除
+                        </button>
+                      ) : null}
+                    </div>
 
                     {replies.length > 0 ? (
                       <div className="campfire-replies">
@@ -1838,6 +1880,11 @@ export function CampfireArLayer({
                               <time>{formatCommentTime(reply.createdAt)}</time>
                             </div>
                             <p>{reply.body}</p>
+                            {isOwnComment(reply) ? (
+                              <button className="campfire-comment-delete" type="button" onClick={() => deleteComment(reply)}>
+                                删除
+                              </button>
+                            ) : null}
                           </article>
                         ))}
                       </div>
