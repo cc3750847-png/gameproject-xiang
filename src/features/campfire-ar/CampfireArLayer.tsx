@@ -1130,8 +1130,7 @@ export function CampfireArLayer({
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
-    closeDrawer();
-    setStatusText('评论已保存，留言面板已收起。');
+    setStatusText(replyTarget ? '回复已发送。' : '评论已发送。');
   };
 
   const submitComment = (event: FormEvent<HTMLFormElement>) => {
