@@ -3,6 +3,9 @@ dist/
 coverage/
 .npm-cache/
 *.tsbuildinfo
+.env
+.env.local
+.env.*.local
 
 .runtime/
 .superpowers/
@@ -13,6 +16,7 @@ test-results/
 extracted-controls/
 tmp*.png
 tmp*.jpg
+campfire-multiplayer-qr.png
 public/runtime/
 public/**/runtime/desktop-share.json
 xiang-river-obsidian-vault/.obsidian/

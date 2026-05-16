@@ -30,7 +30,7 @@ function setMediaDevices(getUserMedia?: () => Promise<{ getTracks: () => Array<{
   });
 }
 
-function setGeolocation(latitude = 28.22821, longitude = 112.93882) {
+function setGeolocation(latitude = 28.17317, longitude = 112.9551) {
   const getCurrentPosition = vi.fn((success: PositionCallback) => {
     success({
       coords: {
